@@ -1,0 +1,1795 @@
+\documentclass[a4paper, 10pt]{ctexart}
+
+\RequirePackage[T]{dryNote}
+
+\title{家用随机过程}
+\author{杜小远}
+\date{\zhtoday}
+
+\begin{document}
+\maketitle
+{
+	\footnotesize\keben\kebenE
+	\tableofcontents
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{预备知识}
+%-----------------------------------------------------------
+\subsection{Markov、Chebyshev不等式}
+
+\begin{theorem}[Markov、Chebyshev不等式]
+	设$f \colon \R^* \to \R^*$单调增, 对任意$\varepsilon > 0$成立Markov不等式
+	\begin{equation}\label{eq:Markov'sInequality}
+		\P(|X| \geq \varepsilon) \leq \frac{\E f(|X|)}{f(\varepsilon)}.
+	\end{equation}
+	特别地, 取$f(x) = x^2$, $X = Y - \E Y$, 有Chebyshev不等式
+	\begin{equation*}
+		\P(|Y - \E Y| \geq \varepsilon) \leq \frac{\var Y}{\varepsilon^2}.
+	\end{equation*}
+\end{theorem}
+\noindent
+证明只需注意到: 
+\begin{equation*}
+	\E f(|X|) 
+		\geq \E \left(f(|X|); |X| \geq \varepsilon \right)
+		\geq \E \left(f(\varepsilon) \I{\{|X| \geq \varepsilon\}} \right) 
+		= f(\varepsilon) \P(|X| \geq \varepsilon).
+\end{equation*}
+
+
+\subsection{独立性}
+
+\noindent
+对于随机变量$X \colon (\Omega, \cF) \to (\R, \cR)$, 其诱导的$\sigma$-域为
+\begin{equation*}
+	\sigma(X) := \{ X^{-1}(A) \colon A \in \cR\}. 
+\end{equation*}
+
+随机变量、$\sigma$-域的独立来自于初等理论中对于事件独立性的推广: 
+\begin{itemize}
+	\item \textbf{(事件独立)} 称事件$A$与$B$独立, 如果$\P(A \cap B) = \P(A) \P(B)$.
+	\item \textbf{($\sigma$-域独立)} 称$\sigma$-域$\cF$和$\mathcal G$独立, 如果任意事件$A \in \cF$和$B \in \mathcal G$总是独立的. 
+	\item \textbf{(随机变量独立)} 称随机变量$X$和$Y$独立, 如果$\sigma(X)$和$\sigma(Y)$相独立. 
+\end{itemize}
+
+%-----------------------------------------------------------
+\subsection{Borel-Cantelli引理}
+
+\begin{theorem}[Borel-Cantelli引理]
+	设$(A_n)_{n \in \N}$为事件序列.
+	\begin{enumerate}
+		\item 若$\sum_n \P(A_n) < \infty$, 则$\P(A_n \text{ i.o.} ) =0$. 
+		\item 若$A_n$\textbf{相互独立}且$\sum_n \P(A_n) = \infty$, 则$\P(A_n \text{ i.o.} ) =1$.
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	\begin{enumerate}
+		\item 由$\P$上半连续、$\sigma$-可加性和Cauchy收敛准则: 
+		\begin{equation*} 
+			\P\left(\lim_{n \to \infty} \bigcup_{m \geq n} A_m\right) 
+			= \lim_{n \to \infty} \P \left(\bigcup_{m \geq n} A_m\right) 
+			\leq \lim_{n \to \infty} \sum_{m \geq n} \P(A_m) = 0. 
+		\end{equation*}
+		\item 由De Morgan律和$\P$下半连续
+		\begin{equation*}
+			\P \left( \left(\bigcap_{m=1}^{\infty} \bigcup_{n=m}^{\infty} A_n \right)^c \right)
+			= \P \left( \bigcup_{m=1}^{\infty} \bigcap_{n=m}^{\infty} A_n^c \right) 
+			= \lim_{m \to \infty} \P\left( \bigcap_{n=m}^{\infty} A_n^c \right).
+		\end{equation*}
+		而对任意$m \in \N$, 由不等式$\log(1-x) \leq -x$在$x \in [0,1]$成立, 总有
+		\begin{align*}
+			\P \left( \bigcap_{n=m}^{\infty} A_n^c \right) 
+			&= \lim_{N \to \infty} \P \left( \bigcap_{n=m}^{N} A_n^c \right) 
+			= \prod_{n=m}^{\infty} \left( 1 - \P(A_n) \right) \\
+			&= \exp\left( \sum_{n=m}^{\infty} \log(1-\P(A_n)) \right)
+			\leq \exp\left(- \sum_{n=m}^{\infty} \P(A_n) \right) 
+			= 0. 
+		\end{align*}
+	\end{enumerate}
+\end{proof}
+
+
+%-----------------------------------------------------------
+\subsection{随机变量序列的收敛}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lcl}
+	\toprule
+		$X_n \stackrel{\P}{\to} X$ &\quad & $\forall \varepsilon > 0$, $\P(|X_n - X| > \varepsilon) \to 0 \quad(n \to \infty)$ \\
+		$X_n \stackrel{a.s.}{\to} X$ &\quad & $\P\left(\lim_n X_n = X\right) = 1$ \\
+		$X_n \stackrel{L^p}{\to} X$ &\quad & $\E|X_n - X|^p \to 0 \quad (n \to \infty)$\\
+	\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{remark}\label{rm:LpInpliesProbConvergence}
+由Fatou引理易见几乎处处收敛强于依概率收敛: 对任意$\varepsilon > 0$, 
+\begin{equation*}
+	0 
+	= \P \left( \limsup_{n \to \infty} |X_n - X| > \varepsilon \right) 
+	\geq \limsup_{n \to \infty} \P\left( |X_n - X| > \varepsilon \right) 
+	\geq 0. 
+\end{equation*} 
+由Markov不等式\eqref{eq:Markov'sInequality}
+\begin{equation*}
+	\P \left( |X_n - X| > \varepsilon \right) \leq \frac{\E|X_n - X|^p}{\varepsilon^p}
+\end{equation*}
+可知, $L^p$收敛强于依概率收敛. 
+\end{remark}
+
+%-----------------------------------------------------------
+\subsection{大数定律}
+
+\noindent
+大数定律是指, 对于独立同分布的随机变量序列$\{X_n\}$, $S_n = X_1 + \cdots + X_n$的均值在某种意义下收敛于期望. 
+ 
+\begin{theorem}[弱大数定律]\label{wlln}
+	设$\{X_n\}$独立同分布, 且$\E |X_i| < \infty$, $\E X_i = \mu$, 则
+	\begin{equation*}
+		S_n / n \stackrel{\P}{\to} \mu. 
+	\end{equation*}
+\end{theorem}
+
+\begin{theorem}[强大数定律]\label{slln}
+	设$\{X_n\}$两两独立同分布, 且$\E |X_i| < \infty$, $\E X_i = \mu$, 则
+	\begin{equation*}
+		S_n / n \stackrel{a.s.}{\to} \mu.
+	\end{equation*}
+\end{theorem}
+
+
+%-----------------------------------------------------------
+\subsection{中心极限定理}
+\noindent
+中心极限定理研究的是, 独立随机变量和的极限分布在何种条件下为正态分布的问题. 
+
+\begin{theorem}[de Moivre-Laplace]
+	
+\end{theorem}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{鞅论}
+%-----------------------------------------------------------
+\subsection{条件期望}
+
+给定概率空间$(\Omega, \cF_0, \P)$, 子$\sigma$-域$\cF \subset \cF_0$, 随机变量$X \in \cF_0$可积. 
+称$Y$为$X$关于$\cF$的条件期望, 如果满足
+\begin{enumerate}
+	\item $Y \in \cF$; 
+	\item 对任意$A \in \cF$, $\E(Y;A) = \E(X;A)$. 
+\end{enumerate}
+可以证明这样的的$Y$存在唯一(a.s.), 且$E|Y| < \infty$, 记做$\E(X|\cF)$. 
+
+\begin{theorem}[条件期望的性质]
+	条件期望具有如下性质: 
+	\begin{enumerate}[label=(\arabic*)]
+		\item \textbf{(全期望公式)} $\E(\E(X|\cF)) = \E X$; (取$A = \Omega \in \cF$即可)
+		\item 特别地, 如果$X \in \cF$, 则$\E(X|\cF) = X$ a.s.;
+		\item \textbf{(线性)} $\E(aX_1+bX_2 | \cF) = a \E(X_1|\cF) + b\E(X_2|\cF)$; 
+		\item \textbf{(保号性/正性)} 若$X \leq Y$a.s., 则$\E(X|\cF) \leq \E(Y|\cF)$ a.s.;
+		\item \textbf{(cMON)} 若$0 \leq X_n \uparrow X$, 则$\E(X_n|\cF) \uparrow \E(X|\cF)$; 
+		\item \textbf{(cFatou)} 若$X_n \geq 0$, 则$\E\left( \liminf X_n | \cF \right) \leq \liminf \E(X_n | \cF)$; 
+		\item \textbf{(cDOM)} 若$|X_n| \leq Y \in L^1$, $\forall n$, 且$X_n \to X$ a.s.,  则$\E(X_n|\cF) \to \E(X|\cF)$ a.s.; 
+		\item \textbf{(cJensen)} 若$\varphi$为凸函数且$\E X, \E \varphi(X) < \infty$, 则$\E(\varphi(X) | \cF) \geq \varphi(\E(X|\cF))$; 
+		\item \textbf{(Tower)} 若$\cF_1 \subset \cF_2$, 则$\E(\E(X|\cF_1)|\cF_2) = \E(X|\cF_1) = \E(\E(X|\cF_2)|\cF_1)$; 
+		\item \textbf{("将已知者提取出来")} 若$X \in \cF$, $\E|XY|, \E(Y) < \infty$, 则$\E(XY|\cF) = X \E(Y|\cF)$. 
+	\end{enumerate}
+\end{theorem}
+\begin{remark}
+	(8) 若$\varphi$非线性, 记$S= \{(a,b) \in \Q^2 \colon a x+ b \leq \varphi(x), \forall x\}$, 则
+	\begin{equation*}
+		\E(\varphi(X)|\cF) \geq a \E(X|\cF) + b, \quad \forall (a,b) \in S, 
+	\end{equation*}
+	对右侧取上界有Jensen不等式成立. 
+	特别地, 可以取$\varphi = |\cdot|^p$, $p \geq 1$. 
+	
+	(10) 的证明需要从示性函数开始. 
+\end{remark}
+
+\textbf{条件期望的几何解释.} 
+若$\E X^2 < \infty$, 则$Y = \E(X|\cF)$为$\cF$-可测的随机变量中使得均方误差$\E(X-Y)^2$最小的那一个随机变量: 任取$Z \in L^2(\cF) \subset L^2(\cF_0)$, 有
+\begin{equation*}
+	\E(Z(X - \E(X|\cF))
+	= \E ZX - \E(\E(ZX|\cF))
+	= 0, 
+\end{equation*}
+从而$X-\E(X|\cF)$与$L^2(\cF)$正交. 
+%-----------------------------------------------------------
+\subsection{鞅、几乎处处收敛}
+称随机变量序列$\{X_n\}$为适应于$\{\cF_n\}$的\emph{鞅}, 如果满足
+\begin{center}
+	(1) $\E |X_n| < \infty$; \quad
+	(2) $X_n \in \cF_n$; \quad
+	(3) $\E(X_{n+1}|\cF_n) = X_n$.
+\end{center}
+若(3)中等号被替换为“$\leq$”或“$\geq$”, 则相应地我们称$X_n$为\emph{上鞅}或\emph{下鞅}. 
+
+Doob 上穿不等式是证明所有的鞅或下鞅收敛定理的基本工具.
+
+\begin{theorem}[Doob上穿不等式]\label{thm:Upcrossing}
+	设$X_n$为下鞅, 令$a < b$, 定义停时序列$(N_k)_{k \geq 0}$: $N_0 = -1$, 
+	\begin{align*}
+		N_{2k-1} &:= \inf\{m > N_{2k-2} \colon X_m \leq a\}, \\
+		N_{2k} &:= \inf\{m > N_{2k-1} \colon X_m \geq b\}. 
+	\end{align*}
+	上穿的记数为可料过程
+	\begin{equation*}
+		H_m :=
+		\begin{cases}
+			1, & N_{2k - 1} < m \leq N_{2k}, \\
+			0, & \text{其他}.
+		\end{cases}
+	\end{equation*}
+	时刻$n$上穿的次数为$U_n:= \sup\{k \colon N_{2k} \leq n\}$, 
+	则有不等式成立: 
+	\begin{equation}
+		(b-a) \E U_n \leq \E(X_n-a)^+ - \E(X_0 - a)^+. 
+	\end{equation}
+\end{theorem}
+
+\begin{theorem}[鞅收敛定理] \label{thm:MartingaleConvergence}
+	\begin{enumerate}
+		\item 下鞅$X_n$满足$\sup_m \E X_m^+ < \infty$, 则$X_n \stackrel{a.s.}{\to} X \in L^1$. 
+		\item 非负上鞅$X_n$有$X_n \stackrel{a.s.}{\to} X$且$\E X \leq \E X_0$. 
+	\end{enumerate}
+\end{theorem}
+\begin{remark}
+	对于非负鞅(一定也是上鞅), 我们常用第二条说明其收敛. 
+\end{remark}
+
+\begin{proof} 
+\begin{enumerate}
+	\item 
+	注意到$(X_n - a)^+ \leq X_n^+ + |a|$, 由定理 \ref{thm:Upcrossing} 有
+	\begin{equation*}
+		\E U_n \leq \frac{\E X_n^+ + |a|}{b-a} \leq \frac{\sup_m \E X_m^+ + |a|}{b-a}, 
+	\end{equation*} 
+	根据单调收敛性可知随机变量$U_n \uparrow U$, 为整个序列上穿$[a,b]$的次数. 
+	于是由控制收敛定理, $\E U < \infty$, $U$几乎处处有界, 进而$\{\liminf_n X_n < a < b < \limsup_n X_n\} \subset \{\lim_n U_n = \infty\}$为零测集. 
+	由$(a,b)$的任意性成立
+	\begin{equation*}
+		\P \left( \bigcup_{a,b \in \Q} \left\{ \liminf_{n \to \infty} X_n < a < b < \limsup_{n \to \infty} X_n \right\} \right) = 0
+	\end{equation*}
+	于是根据有理数的稠密性有$\liminf_n X_n = \limsup_n X_n$ a.s., 即$\lim_n X_n$几乎处处存在. 
+	由Fatou引理, $\E X^+ \leq \liminf_n \E X_n^+ < \infty$, 另一方面
+	\begin{equation*}
+		\E X^- 
+		\leq \liminf_n \E X_n^- 
+		= \liminf_n (\E X_n^+ - \E X_n) 
+		\leq \liminf_n \E X_n ^+ - \E X_0 < \infty
+	\end{equation*}
+	于是$\E|X| = \E X^+ + \E X^- < \infty$, $X \in L^1$. 
+	\item 
+	下鞅$Y_n := - X_n \leq 0$满足$\E Y_n^+ \equiv 0$. 
+	再由Fatou引理, $\E X \leq \liminf_n \E X_n \leq \E X_0$. 
+\end{enumerate}
+\end{proof}
+
+\begin{example}[未必有$L^1$收敛性!!!] \label{example:a.s.ButNotL1}
+	考虑$\Z^1$上的对称随机游走, $S_0 = 1$, $S_n = S_{n-1} + \xi_n$, 其中$\xi_i$ i.i.d.且$\P(\xi_i = -1) = \P(\xi_i = 1) = \frac12$. 
+	记$N:= \inf\{m \colon S_m = 0\}$, 则停止过程作为非负鞅$X_n:= S_{N \wedge n}$ a.s.收敛于$X_{\infty}$. 
+	注意到$\Z^1$是常返的, 于是$\P(N = \infty) = 0$, 即$N$a.s.有限, $X_\infty = 0$, 进而
+	\begin{equation*}
+		\E|X_n - X_\infty| = \E X_n = \E X_0 = 1. 
+	\end{equation*}
+\end{example}
+
+%-----------------------------------------------------------
+\subsection{杜布不等式, 鞅的$L^p$收敛, $p >1$}
+
+下述关于有界停时的基本定理后续会被多次使用, 所使用的证明方法也是非常经典的. 
+\begin{theorem}\label{thm:BddST}
+	设$X_n$为下鞅, 停时$N$ a.s.有界, 即存在$k$使得$\P(N \leq k) = 1$. 
+	则有
+	\begin{equation*}
+		\E X_0 \leq \E_N \leq \E X_k. 
+	\end{equation*}
+\end{theorem}
+\begin{proof}
+	注意到$X_{N \wedge n}$亦为下鞅, 于是有$\E X_0 \leq \E X_{N \wedge 0} \leq \E X_{N \wedge k} = \E X_N$. 
+	下面我们证明第二个不等式, 记可料过程$K_n:= \I{\{N < n\}}$, 于是$(K \cdot X)_n = X_n - X_{N \wedge n}$亦为下鞅, 从而有$\E X_k - \E X_N = \E (K \cdot X)_k \geq \E(K \cdot X)_0 = 0$. 
+\end{proof}
+
+\begin{remark}[第一个不等号对于非有界停时未必成立!!!]
+	依然考虑示例 \ref{example:a.s.ButNotL1}, 有$\E S_0 = 1 > 0 = \E S_N$. 
+\end{remark}
+
+\begin{theorem}[Doob不等式]\label{thm:Doob'sInequality}
+	设$X_m$为下鞅, 记前$n$项正部的最大值为
+	\begin{equation*}
+		\bar X_n := \max_{0 \leq m \leq n} X_m^+. 
+	\end{equation*}
+	对于$\lambda > 0$, 记$A = \{\omega \colon \bar X_n(\omega) \geq \lambda\}$, 则有
+	\begin{equation}
+		\lambda \P(A) \leq \E X_n \mathbf 1_A \leq \E X_n^+. 
+	\end{equation}
+\end{theorem}
+\begin{proof}
+	记$N := \inf\{m \colon X_m \geq \lambda\}$, 于是在$A$上有$X_{N \wedge n} = X_N \geq \lambda$, 从而有
+	\begin{equation*}
+		\lambda \P(A) 
+		= \E \lambda \mathbf 1_A 
+		\leq \E X_{N \wedge n} \mathbf 1_A. 
+	\end{equation*}
+	注意到$N \wedge n$为有界停时, 于是由定理 \ref{thm:BddST} 有$\E X_{N \wedge n} \leq \E X_n$.
+	 而在$A^c$上有$X_{N \wedge n} = X_n$, 从而$\E X_{N \wedge n} \mathbf 1_{A^c} = \E X_{n} \mathbf 1_{A^c}$, 于是$\E X_{N \wedge n} \mathbf 1_A \leq \E X_n \mathbf 1_A$. 
+\end{proof}
+
+\begin{example}[Kolmogorov最大值不等式]
+	考虑随机游走$S_n = \xi_1 + \cdots + \xi_n$, 其中$\xi_i$ i.d.d. 期望$\E \xi_i = 0$, 方差$\sigma_i^2 = \E \xi_i^2 < \infty$. 
+	于是$S_n$为鞅, $X_n:=S_n^2$为下鞅. 
+	取$\lambda = x^2$, 由定理 \ref{thm:Doob'sInequality} 可知
+	\begin{equation*}
+		\P\left( \max_{1 \leq m \leq n} |S_m| \geq x \right) \leq \frac{\var(S_n)}{x^2}. 
+	\end{equation*}
+\end{example}
+
+下面的定理说明了对于非负下鞅, 其前$n$项的$L^p$模可以被第$n$项控制. 后续在我们证明鞅的$L^p$收敛定理时, 这可以说明在适当的条件下, $\sup_n |X_n| \in L^p$. 
+\begin{theorem}[$L^p$最大值不等式]\label{thm:LpMax}	
+	设$X_n$为\textbf{下鞅}, 则对$1 < p < \infty$, 成立
+	\begin{equation*}
+		\E(\bar X_n^p) \leq \left( \frac{p}{p-1} \right)^p \E(X_n^+)^p. 
+	\end{equation*}
+	那么对于任意的鞅$Y_n$, $|Y_n|$为非负下鞅, 记$Y_n^* = \max_{0 \leq m \leq n} |Y_m|$, 我们有
+	\begin{equation*}
+		\E|Y_n^*|^p \leq \left( \frac{p}{p-1} \right)^p \E|Y_n|^p. 
+	\end{equation*}
+\end{theorem}
+
+\begin{proof}
+	我们对随机变量$\bar X_n$做截断使其有界, 依次使用引理\ref{lemma:trickOfExpectation}、Doob不等式、Fubini定理、Hölder不等式可得
+	\begin{align*}
+		\E (\bar X_n \wedge M)^p
+		&= \int_0^{\infty} p \lambda^{p-1} \P(\bar X_n \wedge M \geq \lambda) \dd \lambda \\
+		&\leq \int_0^{\infty} p \lambda^{p-1}  \left( \lambda^{-1} \int_{\Omega} X_n^+ \I{\{\bar X_n \wedge M \geq \lambda\}} \dd \P \right) \dd \lambda \\
+		&= \int_{\Omega} X_n^+ \int_0^{\bar X_n \wedge M} p \lambda^{p-2} \dd \lambda \dd \P 
+		= \frac{p}{p-1} \int_{\Omega} X_n^+ (\bar X_n \wedge M)^{p-1} \dd \P \\
+		&\leq \frac{p}{p-1} \left[ \E(X_n^+)^p \right]^{1/p} \left[ \E(\bar X_n \wedge M)^p \right]^{1/q}, 
+	\end{align*}
+	其中$q = \frac{p}{p-1}$. 
+	两边同时除以$\left[ \E(\bar X_n \wedge M)^p \right]^{1/q}$(多亏$\wedge M$才有这是有限的)、 同时取$p$次幂, 再令$M \to \infty$, 由单调收敛定理可得目标不等式成立. 
+\end{proof}
+
+
+\begin{example}[不存在$L^1$最大值不等式!!!]
+	我们沿用示例 \ref{example:a.s.ButNotL1} 中的记号, 非负（下）鞅$X_n$满足$\E X_n = \E S_{N \wedge n} = \E S_0 = 1$. 
+	另一方面, 有 
+	\begin{equation*}
+		\P \left( \max_m X_m \geq M \right) = \frac1M, 
+	\end{equation*}
+	于是$\E( \max_m X_m) = \sum_{M=1}^{\infty} \P \left( \max_m X_m \geq M \right) = \infty$. 
+	从而由单调收敛定理, $\E (\max_{1 \leq m \leq n} X_m) \uparrow \infty\; (n \to \infty)$. 
+\end{example}
+
+从定理 \ref{thm:LpMax} 出发, 我们可以得到: 
+\begin{theorem}[鞅的$L^p$收敛定理]\label{thm:LpConvergence}
+	若鞅$X_n$满足$\sup_k \E |X_k|^p < \infty$, $p > 1$, 则$X_n \to X$ a.s. 且 $L^p$. 
+\end{theorem}
+\begin{proof}
+	由于$(\E X_n^+)^p \leq (\E|X_n|)^p \leq \E |X_n|^p \leq \sup_k \E |X_k|^p < \infty$, 于是由(下)鞅收敛(定理 \ref{thm:MartingaleConvergence}), $X_n \to X$ a.s.. 
+	另一方面由$L^p$最大值不等式(定理 \ref{thm:LpMax}), 对任意$n$我们有
+	\begin{equation*}
+		\E \left( \max_{0 \leq m \leq n} |X_m| \right)^p 
+		\leq 
+		\left( \frac{p}{p-1} \right)^p \E|X_n|^p 
+		\leq  
+		\left( \frac{p}{p-1} \right)^p \sup_k \E|X_k|^p
+		< \infty. 
+	\end{equation*}
+	令$n \to \infty$, 由单调收敛定理有$\sup_k |X_k| \in L^p$. 
+	由于$|X_n - X|^p \leq (2 \sup_k |X_k|)^p$, 由控制收敛定理有$\E |X_n - X|^p \to 0$. 
+\end{proof}
+
+%-----------------------------------------------------------
+\subsection{平方可积鞅}
+
+\noindent
+本节我们研究$L^2$空间中的鞅, 即\emph{平方可积鞅}. 
+
+\begin{theorem}[鞅增量的正交性]
+	设$X_n$为平方可积鞅, $m \leq n$, 对任意$Y \in L^2(\cF_m)$有
+	\begin{equation*}
+		\E((X_n - X_m) Y) = 0. 
+	\end{equation*}
+	特别地, 如果$l < m < n$, 我们有
+	\begin{equation*}
+		\E((X_n - X_m)(X_m -X_l)) = 0. 
+	\end{equation*}
+\end{theorem}
+\begin{proof}
+	由Hölder不等式, $\E|(X_n - X_m) Y| \leq [\E(X_n - X_m)^2] ^{\frac12} [\E Y^2] ^{\frac12} < \infty$. 
+	再由全期望公式和鞅性, 我们有
+	\begin{equation*}
+		\E((X_n - X_m) Y) = \E[\E((X_n - X_m) Y | \cF_m)] = \E[ Y \E(X_n - X_m | \cF_m)] = 0. 
+	\end{equation*}
+\end{proof}
+
+\begin{theorem}[条件方差公式]
+	设$X_n$为平方可积鞅, 对于$n \geq m$成立
+	\begin{equation*}
+		\E((X_n - X_m)^2 | \cF_m) = \E(X_n^2 |\cF_m) - X_m^2. 
+	\end{equation*}
+\end{theorem}
+
+%\begin{example}[分支过程] $\mu = \E \xi_{i}^{(j)} > 1$, 
+%	种群数量$Z_{n+1} = \xi_1^{(n+1)} + \cdots + \xi_{Z_n}^{(n+1)}$, $X_n := Z_n / \mu^n$为鞅. 
+%	由条件方差公式我们有
+%	\begin{equation*}
+%		\E(X_n^2|\cF_{n-1}) = X_{n-1}^2 + \E((X_n - X_{n-1})^2|\cF_{n-1}). 
+%	\end{equation*}
+%	其中第二项
+%	\begin{align*}
+%		\E((X_n - X_{n-1})^2|\cF_{n-1})
+%		&= \mu^{-2n} \E((Z_n  - \mu Z_{n-1})^2|\cF_{n-1}) \\
+%		&= \mu^{-2n} \E\left(\left(\sum_{i=1}^{Z_{n-1}} \xi_i^{(n+1)}  - \mu Z_{n-1}\right)^2|\cF_{n-1}\right) 
+%		= \frac{\sigma^2}{\mu^{2n}} Z_{n-1}. 
+%	\end{align*}
+%	于是对第一个式子使用重期望公式得到$\E X_n^2 - \E X_{n-1}^2 = \sigma^2 / \mu^{n+1}$, 进而
+%	\begin{equation*}
+%		\E X_n^2 = 1 + \sigma^2 \sum_{k=2}^{n+1} \mu^{-k}. 
+%	\end{equation*}
+%	于是下鞅$X_n^2$满足$\sup_m \E X_m^2 < \infty$, 再由鞅的$L^2$收敛定理, 我们有$X_n \to X$ in $L^2$, 于是一定有$\E X_n  \to \E X$. 
+%	注意到$\E X_n \equiv 1$, 于是$\E X = 1$. 
+%\end{example}
+
+\begin{theorem}[Doob分解定理]
+	下鞅$X_n$存在唯一分解$X_n = M_n + A_n$, 其中$M_n$为鞅, $A_n$为可料增过程且$A_0 = 0$. 
+\end{theorem}
+\begin{proof}
+	我们先由分解的方式, 给出$A_n$应有的形式. 
+	\begin{equation*}
+		\E(X_n | \cF_{n-1})
+		= \E(M_n | \cF_{n-1}) + \E(A_n | \cF_{n-1})
+		= M_{n-1} + A_n
+		= X_{n-1} - A_{n-1} + A_n, 
+	\end{equation*}
+	于是有$A_n - A_{n-1} = \E(X_n | \cF_{n-1}) - X_{n-1}$. 
+	鉴于$A_0 = 0$, $X_n$为下鞅, 可以看出
+	\begin{equation*}
+		A_n = \sum_{m = 1}^{n} \E(X_m - X_{m-1} | \cF_{m-1}) \in \cF_{n - 1}
+	\end{equation*}
+	且为增过程. 
+	另一方面, $M_n = X_n - A_n$具有鞅性: 
+	\begin{equation*}
+		\E(M_n | \cF_{n-1}) 
+		= \E(X_n | \cF_{n-1}) - A_n 
+		= X_{n-1} - A_{n-1}
+		= M_{n-1}. 
+	\end{equation*}
+\end{proof}
+
+若$X_n$为鞅, 则$X_n^2$为下鞅, 从而存在分解$X_n^2 = M_n + A_n$,$A_n$为平方变差过程: 
+\begin{align*}
+	A_n 
+	&= \sum_{m=1}^n \E(X_m^2 | \cF_{m-1}) - X_{m-1}^2
+	= \sum_{m=1}^n \E((X_m - X_{m-1})^2 | \cF_{m-1}) \in \cF_{n-1}. 
+\end{align*}
+
+\begin{definition}[平方变差过程]
+	记$X_n$为平方可积鞅, 存在唯一的可料增过程$A_n$使得$X_n^2 - A_n$为鞅, 我们记$\langle X \rangle_n := A_n$为平方变差过程, 其中
+	\begin{equation*}
+		\langle X \rangle_n = \sum_{i = 1}^n \E((X_i - X_{i-1})^2 | \cF_{i-1}) \in \cF_{n-1}. 
+	\end{equation*}
+\end{definition}
+
+%-----------------------------------------------------------
+\subsection{一致可积、$L^1$收敛}
+
+事实上, 我们常用的反例 \ref{example:a.s.ButNotL1} 不满足诸多性质, 是因为它不满足本节我们要介绍的性质:\emph{一致可积性}(uniformly integrable). 
+粗略地说, 如果这些函数积分的主要贡献不是来自函数的极大值, 则函数族是一致可积的. 
+\begin{definition}[一致可积]
+	称随机变量序列$\{X_i\}_{i \in I}$一致可积, 如果有
+\begin{equation}
+	\lim_{M \to \infty} \left( \sup_{i \in I} \E \left( |X_i|; |X_i| > M \right) \right) 
+	= \lim_{M \to \infty} \left( \sup_{i \in I} \int_{|X_i| > M} |X_i| \dd \P \right)
+	= 0. 
+\end{equation}
+\end{definition}
+
+%与随机收敛一起，一致可积性相当于L1-收敛（见图6.1）。因此，我们得到了勒贝格支配收敛定理。
+
+\begin{remark}\label{rm:UIimpliesBddE}
+	若$\{X_i\}_{i \in I}$一致可积, 可以取充分大$M$使得$\sup_{i \in I} \E \left( |X_i|; |X_i| > M \right) < 1$, 于是有
+	\begin{equation*}
+		\sup_{i \in I} \E |X_i| 
+		\leq \sup_{i \in I} \E \left( |X_i|; |X_i| \leq M \right) + \sup_{i \in I} \E \left( |X_i|; |X_i| > M \right)
+		\leq M+1 < \infty. 
+	\end{equation*}
+\end{remark}
+
+\begin{remark}
+	若存在可积随机变量$Y$使得$|X_i| \leq Y$, $i \in I$, 则由控制收敛定理, 易见$\{X_i\}_{i \in I}$一致可积: 
+	\begin{equation*}
+		\sup_{i \in I} \E \left( |X_i| \I{\{|X_i| > M\}} \right)  
+		\leq \sup_{i \in I} \E \left( |X_i| \I{\{Y > M\}} \right) 
+		\to 0 \quad (M \to \infty). 
+	\end{equation*}
+\end{remark}
+
+下面我们利用可积随机变量和条件概率构造一族一致可积随机变量: 
+\begin{theorem}\label{thm:CEofRVisUI}
+	给定概率空间$(\Omega, \cF_0, \P)$, $X \in L^1$, 则$\{\E(X|\cF) \colon \cF \text{ 为$\cF_0$的子$\sigma$-域} \}$一致可积. 
+\end{theorem}
+\begin{remark}\label{rm:ConstructionOfUiMartingale}
+	特别地, 取子$\sigma$-域族为某个流$(\cF_n)_{n \in \N}$, 我们可以得到一族一致可积鞅$\{ \E(X|\cF_n) \}$. 
+\end{remark}
+
+一致可积和$L^1$收敛有如下关系: 
+\begin{theorem}
+	若可积随机变量列$X_n$依概率收敛于$X$, 则下述命题等价: 
+	\begin{enumerate}[label=(\roman*)]
+		\item $\{X_n\}$一致可积; 
+		\item $X_n \stackrel{L^1}{\to} X$; 
+		\item $\E|X_n| \to \E X < \infty$. 
+	\end{enumerate}
+\end{theorem}
+
+%\begin{proof}
+%	$(i) \Rightarrow (ii)$ 
+%		引入截断函数
+%		\begin{equation*}
+%			\varphi_M(x) = 
+%			\begin{cases}
+%				M, & x > M, \\ x, & -M \leq x \leq M, \\ -M, & x < -M. 
+%			\end{cases}
+%		\end{equation*}
+%		于是$|\varphi_M(Y) - Y| \leq (|Y| - M)^+ \I{\{|Y| > M\}} \leq |Y|  \I{\{|Y| > M\}}$, 进而
+%		\begin{align*}
+%			\E|X_n - X|
+%			&\leq \E|\varphi_M(X_n) - \varphi_M(X)| + \E|X_n - \varphi_M(X_n)| + \E|X - \varphi_M(X)| \\
+%			&\leq \E|\varphi_M(X_n) - \varphi_M(X)| + \E(|X_n|; |X_n| > M) + \E(|X|; |X| > M). 
+%		\end{align*}
+%		其中右手边第一项满足$\varphi_M(X_n) \stackrel{\P}{\to} \varphi_M(X)$, 根据有界收敛定理可知其趋于$0$; 
+%		由一致可积可知第二项趋于$0$; 
+%\end{proof}
+
+
+\begin{theorem}\label{thm:SubMartingaleL1}
+	对于下鞅$X_n$, 下述命题等价: 
+	\begin{enumerate}[label=(\roman*)]
+		\item $\{X_n\}$一致可积; 
+		\item $X_n \to X$ a.s. 且 $L^1$;
+		\item $X_n \stackrel{L^1}{\to} X$. 
+	\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+	$(i) \Rightarrow (ii)$ 由注 \ref{rm:UIimpliesBddE}, 一致可积意味着$\sup \E |X_n| < \infty$, 于是由下鞅收敛定理$X_n \to X$ a.s., 再由上一定理, $X_n \stackrel{L^1}{\to} X$. 
+	
+	$(iii) \Rightarrow (i)$ 由注 \ref{rm:LpInpliesProbConvergence}, $X_n \stackrel{\P}{\to} X$, 再由上一定理可知$\{X_n\}$一致可积. 
+\end{proof}
+
+\begin{lemma}
+	若可积随机变量$X_n \stackrel{L^1}{\to} X$, 则$\E(X_n;A) \to \E(X;A)$. 
+\end{lemma}
+\begin{proof}
+	$|\E X_m \mathbf{1}_A - \E X \mathbf{1}_A| \leq \E |X_m \mathbf{1}_A - X \mathbf{1}_A| \leq \E|X_m - X| \to 0$. 
+\end{proof}
+
+\begin{lemma}\label{lemma:convergenceInL1ImpliesCE}
+	若鞅$X_n \stackrel{L^1}{\to} X$, 则$X_n = \E(X | \cF_n)$. 
+\end{lemma}
+\begin{proof}
+	由鞅性, 对任意$m > n$有$\E(X_m|\cF_n) = X_n$. 
+	换言之, 对任意$A \in \cF_n$, 有$\E(X_m;A) = \E(X_n;A)$, $\forall m > n$. 
+	上一引理说明$\E(X_m;A) \to \E(X;A)$, 于是$\E(X;A) \equiv \E(X_n;A)$, $\forall A \in \cF_n$, 由定义可知$X_n = \E(X | \cF_n)$. 
+\end{proof}
+
+\begin{theorem}\label{thm:uiMartingale}
+	对于鞅$X_n$, 下述命题等价: 
+	\begin{enumerate}[label=(\roman*)]
+		\item $\{X_n\}$一致可积; 
+		\item $X_n \to X$ a.s. 且 $L^1$;
+		\item $X_n \stackrel{L^1}{\to} X$; 
+		\item 存在随机变量$X$使得$X_n = \E(X|\cF_n)$. 
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	由定理 \ref{thm:SubMartingaleL1} 可知命题$(i), (ii), (iii)$等价. 
+	$(iii) \Rightarrow (iv)$由引理 \ref{lemma:convergenceInL1ImpliesCE} 可知. 
+	$(iv) \Rightarrow (i)$由定理 \ref{thm:CEofRVisUI} 可知这样的条件期望序列一致可积. 
+\end{proof}
+
+\begin{theorem}
+	若$\cF_n \uparrow \cF_{\infty}$, 则$\E(X|\cF_n) \to \E(X|\cF_{\infty})$ a.s. 且 $L^1$. 
+\end{theorem}
+
+\begin{proof}
+	由注 \ref{rm:ConstructionOfUiMartingale} 可知$Y_n:=\E(X|\cF_n)$为一致可积鞅. 
+	再由定理 \ref{thm:uiMartingale}, 有$Y_n \to Y_{\infty}$ a.s. 且 $L^1$. 
+	结合$Y_n$的定义和引理 \ref{lemma:convergenceInL1ImpliesCE}, 有$\E(X|\cF_n) = \E(Y_{\infty}|\cF_n)$, 即
+	\begin{equation*}
+		\int_A X \dd \P = \int_A Y_{\infty} \dd \P, \quad \forall A \in \cF_n. 
+	\end{equation*}
+	再由积分的可加性, 上式对于任意$A \in \cup_n \cF_n$成立. 
+	注意到$\cup_n \cF_n$为一个$\pi$-类, $\cF_{\infty} = \sigma( \cup_n \cF_n)$, 于是由$\pi - \lambda$定理可知对于任意$A \in \cF_{\infty}$上式亦成立. 
+	因为$Y_{\infty} \in \cF_{\infty}$, 根据条件概率定义可知$Y_{\infty} = \E(X|\cF_{\infty})$. 
+\end{proof}
+
+这一定理的直接推论为: 
+\begin{theorem}[Lévy $0-1$ 律]\label{thm:Lévy0-1Law}
+	若$\cF_n \uparrow \cF_{\infty}$, $A \in \cF_{\infty}$, 则$\E(\mathbf 1_A |\cF_n) \stackrel{a.s.}{\to} \mathbf 1_A$. 
+\end{theorem}
+
+\begin{remark}
+	借用钟开莱的一句话：“读者需要思考这个结果的意义，并自行判断它是显而易见的还是难以置信的。”
+	
+	\textbf{(显而易见的)}
+	由于$\mathbf 1_A \in \cF_{\infty}$, $\cF_n \uparrow \cF_{\infty}$, 于是给定信息$\cF_n$, 我们关于$\mathbf 1_A$的最佳猜测应该逼近$\mathbf 1_A$. 
+	
+	\textbf{(难以置信的)}
+	设$A$在尾$\sigma$-域$\mathcal T$中, 于是$\mathbf 1_A$与$\cF_n$独立, $\E(\mathbf 1_A|\cF_n) = \P(A)$. 
+	由Lévy 0-1 律 左边a.s.收敛于$\mathbf 1_A$, 于是$\P(A) = \mathbf 1_A$ a.s., $\P(A) \in \{0, 1\}$.
+	换而言之, Lévy 0-1 律蕴含了Kolmogorov 0-1 律 (定理 \ref{thm:Kolmogorov0-1Law}). 
+\end{remark}
+
+%-----------------------------------------------------------
+\subsection{可选停时定理}
+
+对于下鞅$X_n$, 自然有$\E X_m \leq \E X_n$, $\forall m \leq n$. 
+本节的中心问题是我们能否将其\emph{推广至随机时间}上, 即对于$M \leq N$为停时, 是否有$\E X_M \leq \E X_N$. 
+
+当停时$N$ a.s. \emph{有界}时, 这是成立的, 事实上这是对定理 \ref{thm:BddST} 做如下推广: 
+\begin{example}
+	设$X_n$为下鞅, $M \leq N$为停时, 其中$\P(N \leq k) = 1$, 则有$\E X_M \leq \E X_N$. 
+\end{example}
+\begin{proof}
+	对于$\{M = N \}$, 结论显然成立, 下面我们考虑$\{M < N\}$. 
+	定义$K_n = \I{\{M < n \leq N\}}$, 其中${M < n \leq N} = \{M \leq n-1\} \cap \{N \leq n-1\}^c$, 于是$K_n$可料, $(K \cdot X)_n = X_{N \wedge n} - X_{M \wedge n}$为下鞅. 
+	进一步地, $\E X_N - \E X_M =  \E(K \cdot X)_k \geq \E (K \cdot X)_0 = 0$. 
+\end{proof}
+
+\noindent
+我们还可以得到更强的结论: 
+\begin{example}[Doob有界停时定理]
+	沿用上一示例中的记号, 我们有
+	\begin{equation*}
+		\E(X_N|\cF_M) \geq X_M, 
+	\end{equation*}
+	其中$\cF_M = \{A \in \cF \colon A \cap \{M \leq n\} \in \cF_n \}$. 
+\end{example}
+\begin{proof}
+	由于$\{M \leq n\} \supset \{N \leq n\}$, 于是对任意$A \in \cF_M$, 有$A \cap \{N \leq n\} = \left( A \cap \{M \leq n\} \right) \cap  \{N \leq n\}$, 其中$A \cap \{M \leq n\} \in \cF_n$, 于是$A \in \cF_M \subset \cF_N$. 
+	定义$L:=M \mathbf{1}_A + N \mathbf{1}_{A^c} \leq N$, 注意到
+	\begin{equation*}
+		\{L \leq n\} 
+		= (\{L \leq n\} \cap A) \cup (\{L \leq n\} \cap A^c)
+		= (\{M \leq n\} \cap A) \cup (\{N \leq n\} \cap A^c) 
+		\in \cF_n, 
+	\end{equation*}
+	于是$L$为停时, 从而有$\E X_N \geq \E X_L = \E(X_M;A) + \E(X_N;A^c)$. 
+	移项可得$\E(X_N;A) \geq \E(X_M;A)$, 从而有$\E(X_N|\cF_M) \geq X_M$. 
+\end{proof}
+
+下面我们总是考虑\emph{无界}停时. 
+
+\begin{theorem}\label{thm:UiStoppedProcess}
+	若下鞅$X_n$一致可积, 则对任意停时$N$, 停止过程$X_{N \wedge n}$亦一致可积. 
+\end{theorem}
+\begin{proof}
+	由定理 \ref{thm:BddST}, 下鞅$X_{N \wedge n}^+$满足$\E X_{N \wedge n}^+ \leq X_{n}^+$. 
+	再由$X_n^+$一致可积, 我们有
+	\begin{equation*}
+		\E X_{N \wedge n}^+ \leq \E X_n^+ \leq \sup_m \E X_m^+ < \infty, \quad \forall n. 
+	\end{equation*}
+	于是由鞅收敛定理, $X_{N \wedge n} \stackrel{a.s.}{\to} X_N$且$\E |X_N| < \infty$. 
+	那么
+	\begin{align*}
+		\E(|X_{N \wedge n}|; |X_{N \wedge n}| > K)
+		&= \E(|X_N|; |X_N| > K, N \leq n) + \E(|X_n|; |X_n| > K, N > n) \\
+		&\leq \E(|X_N|; |X_N| > K) + \E(|X_n|; |X_n| > K) 
+	\end{align*}
+	随$K \to \infty$趋于$0$: 第一项中$\E|X_N|$本身有界, 而$X_n$满足一致可积条件. 
+\end{proof}
+
+\begin{theorem}
+	若下鞅$X_n$一致可积, 则对任意停时$N$, $\E X_0 \leq \E X_N \leq \E X_\infty$, 其中$X_\infty = \lim_n X_n$. 
+\end{theorem}
+\begin{proof}
+	和定理 \ref{thm:BddST} 类似, 我们首先有$\E X_0 = \E X_{N \wedge 0} \leq \E X_{N \wedge n} \leq \E X_n$. 
+	令$n \to \infty$, 由定理 \ref{thm:UiStoppedProcess} 和定理 \ref{thm:SubMartingaleL1} 可知一致可积下鞅$X_{N \wedge n} \stackrel{L^1}{\to} X_N$, $X_{n} \stackrel{L^1}{\to} X_{\infty}$. 
+\end{proof}
+
+
+下一结论不再要求一致可积性. 
+\begin{theorem}
+	若上鞅$X_n \geq 0$, 则对任意停时$N$, 有$\E X_0 \geq \E X_N$. 
+\end{theorem}
+\begin{proof}
+	由定理 \ref{thm:BddST} 和Fatou引理, $\E X_0 \geq \liminf_{n} \E X_{N \wedge n} \geq \E X_N$. 
+\end{proof}
+
+下一定理在处理某些有界增量问题时是很有帮助的: 
+\begin{theorem}\label{thm:BddIncrements}
+	若存在常数$B$使得下鞅$X_n$满足$\E\left(|X_{n+1} - X_n| \big| \cF_n \right) \leq B$ a.s. , 停时$N$满足$\E N < \infty$, 则$X_{N \wedge n}$一致可积, 从而$\E X_N \geq \E X_0$. 
+\end{theorem}
+\begin{proof}
+	首先注意到$X_{N \wedge n} = X_0 + \sum_{m = 0}^{n} (X_{m + 1} - X_m) \I{\{m < N\}}$, 于是对任意$n$, 成立
+	\begin{equation*}
+		|X_{N \wedge n}| \leq |X_0| + \sum_{m = 0}^{\infty} |X_{m+1} - X_m| \I{\{N > m\}}.  
+	\end{equation*}
+	要证$\{ X_{N \wedge n} \}$一致可积, 只需证明右侧期望有限, 从而$|X_{N \wedge n}|$被某个可积随机变量控制. 
+	由于$\{N > m\} = \{N \leq m\}^c \in \cF_m$, 于是
+	\begin{align*}
+		\E\left(|X_{m+1} - X_m|; N>m \right)
+		= \E\left( \E\left(|X_{m+1} - X_m|\big|\cF_m \right); N>m \right)
+		\leq B \P(N > m), 
+	\end{align*}
+	进而$\E \sum_m |X_{m+1} - X_m| \I{\{N > m\}} \leq B \sum_m \P(N > m) = B \E N < \infty$. 
+\end{proof}
+
+\subsection{一维随机游走中的应用}
+
+考虑一维随机游走: 初始位置$S_0$为常数, $S_n = S_{n-1} + \xi_n$, 其中$\xi_i$ i.i.d. 满足$\E \xi_i = \mu$. 
+易见$X_n = S_n - n \mu$为线性鞅, 再利用定理 \ref{thm:BddIncrements}, 我们可以把固定时间推广至随机时间: 
+\begin{theorem}[Wald等式]
+	若$S_0 = 0$, 停时$N$满足$\E N < \infty$, 则$\E S_N = \mu \E N$. 
+\end{theorem} 
+\begin{proof}
+	注意到$\E(|X_{n+1} - X_n| | \cF_n) = \E(|\xi_{n+1} - \mu||\cF_n) = \E|\xi_{n+1} - \mu| \leq \E|\xi_i| + \mu \leq B$. 
+	于是$\E X_N = \E X_0 = 0$, 即$\E S_N = \mu \E N$. 
+\end{proof}
+
+\begin{theorem}[$\Z^1$上的对称随机游走]
+	若$\P(\xi_i = 1) = \P(\xi_i = -1) = \frac12$, 随机游走从某一点$x \in [a, b]$出发, 即$S_0 = x$, 记停时$N = \min\{n \colon S_n \notin (a,b)\}$, 则
+	\begin{enumerate}[label=(\roman*)]
+		\item $\displaystyle \P_x(S_N = a) = \frac{b-x}{b-a}, \quad \P_x(S_N = b) = \frac{x-a}{b-a}$; 
+		\item $\E_x N = (b-x)(x-a)$, $\E_0 N = -ab$. 
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	$(i)$ 
+	若连续$(b-a)$次增量都是$+1$, 则一定走出区间$(b-a)$, 于是
+	\begin{equation*}
+		\P_x(N > b-a) \leq 1 - 2^{-(b-a)}, \quad
+		\P_x(N > m(b-a)) \leq \left(1 - 2^{-(b-a)} \right)^m \to 0 (\text{ as } m \to \infty).  
+	\end{equation*}
+	即$\P_x(N < \infty) = 1$, l从而$\E_x N = \sum_m \P_x(N > m) < \infty$. 
+	此时对于鞅$S_n$, 由Wald等式有$\E_x(S_n - S_0) = \mu \E_x N = 0$, 即$\E_x S_N = \E_x S_0 = x$. 
+	另一方面, 因为$S_N = b$或$a$, 于是
+	\begin{equation*}
+		\E_x S_N = a \P_x(S_N = a) + b \P_x(S_N =b) = a \P_x(S_N = a) + b (1-\P_x(S_N = a)). 
+	\end{equation*}
+	这样我们建立了关于$\E S_N$的两个等式, 可以解出两个目标概率的表达式. 
+	
+	\noindent $(ii)$ 
+	由$\sigma^2 =  \E \xi_i^2 = 1$, 于是$X_n := S_n^2 - n \sigma^2 = S_n^2 - n$为鞅, 进一步地, 停止过程$X_{N \wedge n} = S_{N \wedge n}^2 - N \wedge n$为鞅, $\E_x (S_{N \wedge n}^2 - N \wedge n) = \E_x S_0^2 = x^2$. 
+	由单调收敛定理, $\E_x (N \wedge n) \uparrow \E_x N$, 于是
+	\begin{equation*}
+		\E_x N 
+		= \E_x S_N^2 - x^2 
+		= a^2 \P_x(S_N = a) + b^2 \P_x(S_N = b) - x^2
+		= (b-x)(x-a). 
+	\end{equation*}
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{马氏链}
+
+\noindent
+给定概率空间$(\Omega, \cF, \P)$, 状态空间$(S, \cS)$可测. 
+称函数$p \colon S \times \cS \to [0, 1]$为\emph{转移概率}, 如果
+\begin{enumerate}[label=(\roman*)]
+	\item 对任意$x \in S$, $A \mapsto p(x,A)$为$(S,\cS)$上的概率测度; 
+	\item 对任意$A \in \cS$, $x \mapsto p(x,A)$为可测函数. 
+\end{enumerate}
+称$X_n$为适应$\cF_n$, 转移概率为$p$的Markov链, 如果对任意$B \in \cS$有
+\begin{equation}\label{eq:MarkovChain}
+	\P(X_{n+1} \in B | \cF_n) = p(X_n,B), 
+\end{equation}
+其中条件概率由条件期望给出: $\P(X_{n+1} \in B | \cF_n) := \E(\I{\{X_{n+1} \in B\}} | \cF_n)$. 
+
+%-----------------------------------------------------------
+\subsection{定义、实现}
+给定转移概率$p$, 初始分布$X_0 \stackrel{\mathcal L}{\sim} \mu$, 我们可以定义一族有限维分布: 
+\begin{equation*}
+	\P_{\mu}(X_j \in B_j, 0 \leq j \leq n)
+	= \int_{B_0} \mu(\dd x_0) \int_{B_1} p(x_0, \dd x_1) \cdots \int_{B_n} p(x_{n-1}, \dd x_n). 
+\end{equation*}
+可以看到这样的有限维分布是相容的(由$p(x, \cdot )$为$(S,\cS)$上的概率测度可知第二个等号成立): 
+\begin{align*}
+	\P_{\mu}(X_j \in B_j,& 0 \leq j \leq n; X_{n+1} \in S)
+	= \int_{B_0} \mu(\dd x_0) \int_{B_1} p(x_0, \dd x_1) \cdots \int_{S} p(x_{n}, \dd x_{n+1}) \\
+	&= \int_{B_0} \mu(\dd x_0) \int_{B_1} p(x_0, \dd x_1) \cdots \int_{B_n} p(x_{n-1}, \dd x_n) 
+	= \P_{\mu}(X_j \in B_j, 0 \leq j \leq n). 
+\end{align*}
+于是由Kolmogorov扩张定理 \ref{thm:KolmogorovExt}, 概率测度$\P_{\mu}$可以唯一扩张至序列空间$(S^{\N}, \cS^{\N}, \P_{\mu})$. 
+于是相应的Markov链可以通过\emph{坐标过程}来典则实现(同分布): 
+
+\begin{theorem}[典则实现]
+	对于$\omega = (\omega_0, \omega_1, \cdots) \in S^{\N}$, 坐标映射(可测!)
+	\begin{equation*}
+		X_n \colon (S^{\N}, \cS^{\N}) \to (S, \cS), \quad  \omega \mapsto \omega_n
+	\end{equation*}
+	满足\eqref{eq:MarkovChain}, 即为适应流$\cF_n = \sigma(X_0, \cdots X_n)$的Markov链. 
+\end{theorem}
+
+\begin{proof}
+	事实上, 由条件期望的定义, 这相当于对任意$A = \{X_0 \in B_0, \cdots, X_n \in B_n\} \in \cF_n$, $B \in \cS$, 成立
+	\begin{equation*}
+		\E_{\mu} \left( \I{\{X_{n+1} \in B\}}; A \right) 
+		= \E_{\mu} (p(X_n, B); A). 
+	\end{equation*}
+	左边为
+	\begin{align*}
+		&\int_{A} \I{\{X_{n+1} \in B\}} \dd \P_{\mu} 
+		= \P_{\mu} (X_0 \in B_0, \cdots, X_n \in B_n, X_{n+1} \in B) \\
+		=& \int_{B_0} \mu(\dd x_0) \int_{B_1} p(x_0, \dd x_1) \cdots \int_{B_n} p(x_{n-1}, \dd x_{n}) p(x_n,B), 
+	\end{align*}
+	目标等式的右侧为$\int_A p(X_n, B) \dd \P_{\mu}$, 要证两边相等, 我们先从示性函数出发: 对于$C \in \cS$, 
+	\begin{align*}
+		&\int_{B_0} \mu(\dd x_0) \cdots \int_{B_n} p(x_{n-1}, \dd x_{n}) \mathbf{1}_C(x_n)
+		= \int_{B_0} \mu(\dd x_0) \cdots \int_{B_n \cap C} p(x_{n-1}, \dd x_{n})\\
+		=&\P_{\mu}(X_j \in B_j, 0 \leq j < n; X_n \in B_n \cap C)
+		= \P_{\mu}(X_j \in C; A)
+		= \int_A \mathbf{1}_{C}(X_n) \dd \P_{\mu}, 
+	\end{align*}
+	由线性性, 对于简单函数$f$成立
+	\begin{equation*}
+		\int_{B_0} \mu(\dd x_0) \cdots \int_{B_n} p(x_{n-1}, \dd x_{n}) f(x_n)
+		= \int_C f(X_n) \dd \P_{\mu}. 
+	\end{equation*}
+	再由有界收敛定理, 对任意的有界可测函数$f$, 上式依然成立. 
+	特别地, 取$f(x) = p(x, B)$.
+\end{proof}
+
+ 若$X_n$有转移概率$p$, 则有
+\begin{equation}
+	\E(f(X_{n+1})|\cF_n) = \int p(X_n, \dd y) f(y). 
+\end{equation}
+
+
+
+%-----------------------------------------------------------
+\subsection{马氏性}
+
+\noindent
+在典则概率空间$(S, \cS)$上实现Markov链容许我们定义推移算子, 进而叙述Markov性. 
+\begin{definition}[推移算子]
+	对于$\omega = (\omega_0, \omega_1, \cdots) \in S^{\N}$, 定义转移算子
+	\begin{equation*}
+		\theta_k \colon S^{\N} \to S^{\N}, \quad
+		(\omega_0, \omega_1, \cdots) \mapsto (\omega_k, \omega_{k+1}, \cdots). 
+	\end{equation*}
+\end{definition}
+
+\begin{theorem}[Markov性]
+	若$Y \colon (S^{\N}, \cS^{\N}) \to (\R, \cR)$为有界可测函数, 则有
+	\begin{equation*}
+		\E_{\mu}(Y \circ \theta_m |\cF_m) = \E_{X_m} Y. \;(\text{ 即 } \E_{\omega_m} Y)
+	\end{equation*}
+\end{theorem}
+
+Markov性的一个直接结果是著名的Chapman-Kolmogorov方程. 
+\begin{theorem}[C-K方程]\label{thm:C-K}
+	$\P_x(X_{m+n} = z) = \sum_{y \in S} \P_x(X_m = y) \P_y(X_n = z).$
+\end{theorem}
+\begin{proof}
+	由于$\I{\{X_n = z\}} \circ \theta_m = \I{\{X_{n+m} = z\}}$, 
+	\begin{align*}
+		&\P_x(X_{m + n} = z)
+		= \E_x \I{\{X_{n+m} = z\}}
+		= \E_x( \E_x(\I{\{X_{n+m} = z\}} | \cF_m)) \\
+		=& \E_x(\E_x(\I{\{X_n = z\}} \circ \theta_m | \cF_m))
+		= \E_x(\E_{X_m} \I{\{X_n = z\}})
+		= \sum_{y \in S} \P_x(X_m = y) \P_y(X_n = z). 
+	\end{align*}
+\end{proof}
+
+%设$N$为停时, 定义
+%\begin{equation*}
+%	\theta_N \omega = 
+%	\begin{cases}
+%		\theta_n \omega, & \text{ on } \{N = n\}, \\
+%		\Delta, & \text{ on } \{N = \infty\},
+%	\end{cases}
+%\end{equation*}
+%其中$\Delta$为$S^{\N}$外一点. 
+
+强Markov性是指Markov性不止适用于固定时间, 也可以\emph{推广至随机时间}.
+\begin{theorem}[强Markov性]
+	若可测函数序列$Y_n \colon (S^{\N}, \cS^{\N}) \to (\R, \cR)$一致有界: $|Y_n| \leq M$, 则对于停时$N$, 在$\{N < \infty\}$上有
+	\begin{equation*}
+		\E_{\mu}( Y_N \circ \theta_N | \cF_N ) = \E_{X_N} Y_N. 
+	\end{equation*}
+\end{theorem}
+\begin{proof}
+	设$A \in \cF_N$, 即有$A \cap \{N = n\} \in \cF_n$, 于是按$N$的取值分解, 再由Markov性
+	\begin{align*}
+		&\E_{\mu} (Y_N \circ \theta_N; A \cap \{N < \infty\}) 
+		= \sum_{n=0}^{\infty} \E_{\mu} (Y_n \circ \theta_n; A \cap \{N = n\}) \\
+		=& \sum_{n=0}^{\infty} \E_{\mu} (\E_{X_n} Y_n; A \cap \{N = n\}) 
+		= \E_{\mu} (\E_{X_n} Y_n; A \cap \{N < \infty\}). 
+	\end{align*}
+\end{proof}
+
+下面两个定理是强Markov性的应用. 
+定义停时序列$T_y^0 = 0$, $T_y^k := \inf\{n > T_y^{k-1} \colon X_n = y\}$为第$k$次到达$y$的时刻, 记$T_y = T_y^1$, $\rho_{xy} = \P_x(T_y < \infty)$为从$x$出发, 在有限时间内到达$y$的概率. 
+我们有如下直观结论: 
+\begin{theorem}\label{thm:MultipleOfHittingTime}
+	$\P_x(T_y^k < \infty) = \rho_{xy} \cdot \rho_{yy}^{k-1}$. 
+\end{theorem}
+\begin{proof}
+	$k = 1$时结论是平凡的, 下面总假定$k \geq 2$. 
+	定义$Y = \I{\{T_y < \infty\}} $为有限时间到达$y$的示性函数.  
+	令$N = T_y^{k-1}$为停时, 若$T_y^k < \infty$, 有$Y \circ \theta_N \equiv 1$. 
+	由全期望公式、强Markov性, 
+	\begin{align*}
+		\P_x(T_y^k < \infty)
+		&= \E_x(Y \circ \theta_N; N < \infty)
+		= \E_x(\E_x(Y \circ \theta_N | \cF_N); N < \infty) \\
+		&= \E_x(\E_{y} \I{\{T_y < \infty\}} ; N < \infty)
+		= \E_x(\rho_{yy} \cdot \I{\{N < \infty\}})
+		= \rho_{yy} \P_y(T_y^{k-1} < \infty), 
+	\end{align*}
+	由归纳法可见结果成立. 
+\end{proof}
+
+\begin{theorem}[反射原理]
+	设i.i.d.随机变量序列$(\xi_i)$的分布关于$0$对称, 则$S_n = \xi_1 + \cdots + \xi_n$为对称随机游走. 
+	若$a > 0$, 则
+	\begin{equation*}
+		\P \left(\sup_{m \leq n} S_m \geq a \right) \leq 2 \cdot \P(S_n \geq a). 
+	\end{equation*}
+\end{theorem}
+\begin{proof}
+	考虑停时$N := \inf\{m \leq n \colon S_m > a\}$为$S_m$首次超出$a$的时刻. 
+	则不等式左边有
+	\begin{equation*}
+		\P_0 \left( \sup_{m \leq n} S_m > a \right)
+		= \P_0 (N \leq n)
+		= \E_0 \I{\{N \leq n\}}. 
+	\end{equation*}
+	即左边只在$\{N \leq n\}$时取$1$, 否则取$0$. 
+	于是我们只需证明在$\{N \leq n\}$上有$\P(S_n \geq a) \geq 1/2$. 
+	考虑随机变量$Y_m(\omega) = \I{\{\omega_{n - m} \geq a\}}$(这暗示了$Y_m = 1$需满足$m \leq n$). 
+	于是在$m \leq n$时有$(Y_m \circ \theta_m)(\omega) = \I{\{\omega_n \geq a\}}$. 
+	此时由全期望公式、强Markov性, 我们有
+	\begin{align*}
+		\P_0(S_n \geq a ; N \leq n)
+		&= \E_0 ( \I{\{\omega_n \geq a\}} ; N \leq n)
+		= \E_0 (Y_N \circ \theta_N; N \leq n) \\
+		&= \E_0(\E_0(Y_N \circ \theta_N | \cF_N); N \leq n)) 
+		= \E_0(\E_{S_N} Y_N; N \leq n). 
+	\end{align*}
+	于是对于$S_N  = y \geq a$, 由$\xi_i$分布关于$0$对称, 成立
+	\begin{equation*}
+		\E_{S_N} Y_N 
+		= \E_y \I{\{S_{n - N} \geq a\}}
+		= \P_y (S_{n - N} \geq a)
+		\geq \P_y (S_{n - N} \geq y)
+		\geq 1/2. 
+	\end{equation*}
+	其中$\P_y (S_{n - N} \geq y) = \P_y (S_{n - N} \leq y)$, $\P_y (S_{n - N} \geq y) + \P_y (S_{n - N} \leq y) \geq 1$. 
+	综上, 有$\P_0(S_n \geq a ; N \leq n) \geq \E_0( \frac12 \cdot \I{\{N \leq n\}}) = \frac12 \P_0(N \leq n)$, 于是命题成立. 
+\end{proof}
+
+%-----------------------------------------------------------
+\subsection{常返与暂留}
+称状态$y \in S$为\emph{常返}的, 如果$\rho_{yy} = 1$, 否则是\emph{暂留}的. 
+于是由定理 \ref{thm:MultipleOfHittingTime} 可知, 常返意味着对任意$k$有$\P_y(T_y^k < \infty) = 1$, 于是
+\begin{equation*}
+	\sum_{n=0}^{\infty} \P_y(X_n = y) 
+	= \sum_{n=0}^{\infty} \sum_{k=0}^{\infty} \P_y(T_y^k = n)
+	= \sum_{k=0}^{\infty} \P_y(T_y^k < \infty) 
+	= \infty, 
+\end{equation*}
+由Borel-Cantelli第 \uppercase\expandafter{\romannumeral2} 引理, 
+可知$\P_y(X_n = y \text{ i.o.} ) =1$, 即$X_n$会无限次回到$y$. 
+若$y$是暂留的, 记$N(y) = \sum_{n = 1}^{\infty} \I{\{X_n = y\}}$为有限时间内到达$y$的次数, 由引理 \ref{lemma:trickOfExpectation} 可以依如下方式计算期望
+\begin{equation*}
+	\E_x N(y)
+	= \sum_{k=1}^{\infty} \P_x(N(y) \geq k)
+	= \sum_{k=1}^{\infty} \P_x(T_y^k < \infty)
+	= \rho_{xy} \sum_{k=1}^{\infty} \rho_{yy}^{k-1} 
+	= \frac{\rho_{xy}}{1- \rho_{yy}} < \infty. 
+\end{equation*}
+事实上, 这里的$\E_x N(y) = \sum_{n = 1}^{\infty} p^{(n)}(x, y)$. 
+于是有下述定理: 
+\begin{theorem} 
+	状态$y$是常返的 $\; \Longleftrightarrow \;\; \E_x N(y) = \infty$.  
+\end{theorem}
+
+\begin{theorem}[常返的传染性]\label{thm:contagious}
+	若$x$是常返的且$\rho_{xy} > 0$, 则$y$也是常返的且有$\rho_{yx} = 1 = \rho_{xy}$. 
+\end{theorem}
+\begin{proof}
+	由于$\rho_{xy} > 0$, $K := \inf\{k \colon p^{(k)}(x,y) > 0\}$存在, 于是存在点列$\{y_1, \cdots, y_{K-1}\}$使得
+	\begin{equation*}
+		p(x, y_1) p(y_1, y_2) \cdots p(y_{K - 1}, y) > 0. 
+	\end{equation*}
+	由$K$的极小性, $x \notin \{y_i\}$. 
+	若$\rho_{yx} < 1$, 则
+	\begin{equation*}
+		\P_x(T_x = \infty) 
+		\geq p(x, y_1) p(y_1, y_2) \cdots p(y_{K - 1}, y) (1 - \rho_{y x}) 
+		> 0
+	\end{equation*}
+	与状态$x$常返矛盾, 于是只能有$\rho_{yx} = 1$. 
+	此时存在某个$L$使得$p^{(L)}(y, x) > 0$, 于是
+	\begin{equation*}
+		p^{(L + n + K)}(y, y) 
+		\geq p^{(L)}(y, x) p^{(n)}(x, x) p^{(K)}(x, y), 
+	\end{equation*}
+	关于$n$求和, 我们有
+	\begin{equation*}
+		\E_y N(y)
+		= \sum_{n=0}^{\infty} p^{(n)}(x, y)
+		\geq \sum_{n = 1}^{\infty} p^{(L + n + K)}(y, y) 
+		\geq p^{(L)}(y, x) \left[\sum_{n = 1}^{\infty} p^{(n)}(x, x)\right] p^{(K)}(x, y)
+		= \infty. 
+	\end{equation*}
+	于是由上一定理, $y$也是常返的. 
+	再由$\rho_{yx} = 1 > 0$, 有$\rho_{xy} = 1$. 
+\end{proof}
+
+称$C \subset S$为\emph{闭的}, 如果$x \in C$且$\rho_{xy} > 0$意味着$y \in C$. 
+此时对于$x \in C$, $\P_x(X_n \in C) = 1$对全体$n$成立. 
+称$D \subset S$为\emph{不可约的}, 如果$x, y \in D$意味着$\rho_{xy} > 0$. 
+
+\begin{theorem}
+	若$C$为有限闭集, 则$C$包含某个常返态. 
+	进一步地, 若$C$不可约, 则$C$是常返的. 
+\end{theorem}
+\begin{proof}
+	若$C$中不含常返态, 即$\rho_{yy} < 1$, $\E_x N(y) < \infty$, $\forall x, y \in C$. 
+	于是由$C$为有限闭集, 有
+	\begin{equation*}
+		\infty
+		> \sum_{y \in C} \E_x N(y) 
+		= \sum_{y \in C} \sum_{n=1}^{\infty} p^{(n)}(x, y)
+		= \sum_{n=1}^{\infty} \sum_{y \in C} p^{(n)}(x, y)
+		= \sum_{n=1}^{\infty} \P_x(X_n \in C) 
+		= \sum_{n=1}^{\infty} 1.
+	\end{equation*}
+	推出矛盾, 于是$C$中一定有常返态. 
+	若$C$不可约, 则由传染性 \ref{thm:contagious} 可知$C$是常返的.
+\end{proof}
+
+
+%-----------------------------------------------------------
+\subsection{平稳测度}
+
+\noindent
+称测度$\mu$是\emph{平稳的}, 如果$\mu p = \mu$, 即
+\begin{equation*}
+	\sum_{x} \mu(x) p(x, y) = \mu(y), \quad \forall y \in S, 
+\end{equation*}
+这等价于$\P_\mu(X_1 = y) = \mu(y)$. 
+由C-K方程和归纳法可知$\mu p^{(n)} = \mu$, 即$\P_{\mu} (X_n = y) = \mu(y)$. 
+进一步地, 若$\mu$为概率测度, 则称$\mu$为\emph{平稳分布}, 这给出了$X_n$的渐进分布: 以平稳分布$\mu$为初始分布的过程的有限维分布是推移不变的. 
+
+\begin{example}[$\Z^1$上的非对称随机游走]
+	状态空间$S = \Z$, $p(n, n+1) = p$, $p(n, n-1) = q = 1-p$. 
+	$\mu \equiv 1$显然为平凡的平稳测度, 事实上, 还有非平凡的平稳测度$\mu(n) = (p/q)^n$: 
+	\begin{equation*}
+		\sum_{n \in \Z} \mu(n) p(n, m)
+		= \mu(m+1) p(m+1, m) + \mu(m-1) p(m-1, m)
+		= (p/q)^m = \mu(m). 
+	\end{equation*}
+\end{example}
+
+称测度$\mu$是\emph{可逆的}, 如果对任意$x, y \in S$, 成立
+\begin{equation*}
+	\mu(x) p(x, y) = \mu(y) p(y, x). 
+\end{equation*}
+即从分布$\mu$出发、到达的
+可以验证可逆测度总是平稳的.
+可逆测度给出了一个可逆的Markov链: 
+
+\begin{theorem}
+	设$\mu$为平稳测度, Markov链初始时刻$X_0$分布为$\mu$, 则对于$0 \leq m \leq n$, $Y_m := X_{n-m}$为初始测度为$\mu$的Markov链且转移概率为
+	\begin{equation*}
+		q(x, y) = \frac{\mu(y) p(y, x)}{\mu(x)},  
+	\end{equation*}
+	称$q$为\emph{对偶转移概率}. 
+	特别地, $\mu$为可逆测度时$p = q$. 
+\end{theorem}
+
+可逆测度不常有而平稳测度常有, 下面给出了由常返态构造平稳测度的方法:
+\begin{theorem}[平稳测度存在性]\label{thm:ConstructionOfStationaryMeasure}
+	设$x$为常返态, 令$T_x := \inf\{n \geq 1 \colon  X_n = x\}$. 
+	则有平稳测度: 
+	\begin{equation*}
+		\mu_x(y) = 
+		\E_x \left( \sum_{n=1}^{T_x-1} \I{\{X_n = y\}} \right)
+		= \sum_{n = 0}^{\infty} \P_x(X_n = y; T_x > n). 
+	\end{equation*}
+\end{theorem}
+\noindent 此外, 这一测度在某种意义下是唯一的: 
+\begin{theorem}[平稳测度唯一性]
+	若$p$是不可约、常返的, 则平稳测度在相差数乘变换下的意义下唯一.
+\end{theorem}
+
+现在我们考虑\emph{平稳分布}$\pi$(这里强调它是一个概率测度). 
+\begin{theorem}\label{thm:PostiveSDimpliesRecurrent}
+	若存在平稳分布$\pi$, 则所有测度大于零的状态均常返. 
+\end{theorem}
+\begin{proof}
+	当$\pi(y) > 0$时, 由Fubini定理, $\pi p^{(n)} = \pi$, 
+	\begin{align*}
+		\E_{\pi} N(y)
+		= \sum_x \left( \pi(x) \sum_{n=1}^{\infty} p^{(n)}(x,y) \right)
+		= \sum_{n = 1}^{\infty} \pi(y) = \infty.
+	\end{align*}
+	另一方面, 由于$\E_x N(y) = \rho_{xy} / (1 - \rho_{yy})$, 有
+	\begin{equation*}
+		\infty 
+		= \E_{\pi} N(y) 
+		= \sum_x \pi(x) \frac{\rho_{xy}}{1-\rho_{yy}} 
+		\leq \frac{\sum_x \pi(x)}{1 - \rho_{yy}}
+		= \frac{1}{1 - \rho_{yy}}, 
+	\end{equation*}
+	于是只能有$\rho_{yy} = 1$. 
+\end{proof}
+
+\begin{theorem}\label{thm:StationaryDistribution}
+	若$P$不可约且有平稳分布$\pi$, 则$\pi(x) = 1 / \E_x T_x$. 
+\end{theorem}
+\begin{proof}
+	由不可约, 对任意$y$满足$\pi(y) > 0$, 存在某个$k$使得$p^{(k)}(y, x) > 0$, 于是$\pi(x) > \pi(y) p^{(k)}(y, x) > 0$, $\forall x$. 
+	再由上一定理, 所有状态都是正常返的. 
+	根据定理 \ref{thm:ConstructionOfStationaryMeasure}, 
+	\begin{equation*}
+		\mu_x(y) := \sum_{n = 0}^{\infty} \P_x(X_n = y; T_x > n)
+	\end{equation*}
+	给定了满足$\mu_x(x) = 1$的平稳测度. 
+	下面令其满足正则条件. 
+	\begin{equation*}
+		\sum_y \mu_x(y) 
+		= \sum_y \sum_{n=0}^{\infty} \P_X(X_n = y, T_x > n) 
+		= \sum_{n = 0}^{\infty} \P_x(T_x > n) 
+		= \E_x T_x.
+	\end{equation*}
+	于是由平稳分布的唯一性, $\pi(x) = \mu_x(x) / \E_x T_x = 1 / \E_x T_x$. 
+\end{proof}
+
+称状态$x$是\emph{正常返的}, 如果$\E_x T_x < \infty$, 否则称\emph{零常返的}. 
+
+\begin{theorem}
+	若$P$不可约, 则下述命题等价:
+	\begin{enumerate}[label=(\roman*)]
+		\item 某个$x$正常返;
+		\item 存在平稳分布;
+		\item 全体状态正常返. 
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	\emph{(i) $\Rightarrow$ (ii)}
+	由定理 \ref{thm:ConstructionOfStationaryMeasure}, 存在平稳测度$\mu_x$. 
+	再由$\E_x T_x < \infty$, 根据定理 \ref{thm:StationaryDistribution} 我们可以对其归一化: 
+	\begin{equation*}
+		\pi(y) = \sum_{n = 0}^{\infty} \P_x(X_n = y, T_x > n) / \E_x T_x.
+	\end{equation*}
+	\emph{(ii) $\Rightarrow$ (iii)}
+	在定理 \ref{thm:StationaryDistribution} 我们说明了不可约、存在平稳分布意味着所有状态的平稳测度均大于$0$, 于是$\E_y T_y = 1 / \pi(y) < \infty$, $\forall y$. 
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{遍历论}
+
+称序列$(X_n)_{n \geq 0}$为平稳序列, 如果对任意$k \in \N$, 转移序列$(X_{k+n})_{n \geq 0}$与其同分布, 即对任意$m$有
+\begin{equation*}
+	(X_0 \cdots, X_m) \stackrel{L}{\sim} (X_k, \cdots, X_{k+m}), \quad \forall k. 
+\end{equation*}
+特别地, 取$m = 0$有$X_k$总与$X_0$同分布. 
+本节我们总是考虑如下三个经典示例: 
+\begin{example}
+	\begin{enumerate}
+		\item (i.i.d. 序列) 独立同分布序列$(X_n)$. 
+		\item (Markov链) 具有平稳初始分布$\pi$的Markov链, 即$\pi(A) = \int \pi(\dd x) p(x, A)$. 
+			此时$\P(X_1 \in A) = \int \pi(\dd x_0) p(x_0, A) = \pi(A)$, 于是$X_1 \stackrel{L}{\sim} \pi$, 由归纳法有$X_n \stackrel{L}{\sim} \pi$. 
+		\item ($\mathbb S^1$上的旋转) 考虑概率空间$\Omega = [0,1)$, $\cF = \mathcal B(\Omega)$, $\P$为Lebesgue测度. 给定$\theta \in (0,1)$, 定义随机变量序列
+		\begin{equation*}
+			X_n(\omega): = \omega + n \theta \mod 1 = \omega + n \theta - [\omega + n \theta], 
+		\end{equation*}
+			此时$p(x, x + \theta - [x+\theta]) = 1$. 
+	\end{enumerate}
+\end{example}
+
+\begin{definition}[保测映射]
+	保测映射$\varphi \colon \Omega \to \Omega$为保持测度$\P$的连续可测自映射, 即
+	\begin{equation*}
+		\varphi_*\P = \P, \quad \text{ 其中 } \varphi_*\P(A) = \P(\varphi^{-1} A). 
+	\end{equation*}
+	称$\varphi_* \P$为$\P$在$\varphi$下的前推测度 (pushforward measure).
+	我们记$\varphi^0 = \mathop{id}$, $\varphi^n = \varphi \circ \varphi^{n-1}$. 
+\end{definition}
+
+\begin{remark}
+	对任意$X \in \cF$, $X_n(\omega) := X(\varphi^n \omega)$定义了一个平稳序列: 记$A = \{\omega \colon (X_0(\omega), \cdots X_n(\omega)) \in B\}$, 其中$B \in \cR^{n+1}$. 
+	注意到$X_{k + m}(\omega) = X(\varphi^{k+m} \omega) = X \circ \varphi^m (\varphi^k \omega) = X_m(\varphi^k \omega)$, 于是
+	\begin{align*}
+		\P((X_{k}(\omega), \cdots X_{k + n}(\omega)) \in B)
+		&= \P((X_{0}(\varphi^k \omega), \cdots X_{n}(\varphi^k \omega)) \in B) 
+		= \P(\varphi^k \omega \in A) = \P(\omega \in A) \\
+		&= \P((X_0(\omega), \cdots X_n(\omega)) \in B). 
+	\end{align*}
+\end{remark}
+事实上, 每一个平稳序列都可以由可测映射与保测映射的复合来实现. 
+若$(Y_n)_{n \geq 0}$的状态空间$(S^{\N}, \cS^{\N})$容许我们使用Kolmogorov扩张定理 \ref{thm:KolmogorovExt} , 于是可以在序列空间$(S^{\N}, \cS^{\N})$上构造唯一的概率测度, 使得坐标过程$X_n(\omega) = \omega_n$与$Y_n$同分布. 
+那么我们令$X(\omega) = \omega$, $\varphi$为一阶推移算子, 即$\varphi(\omega_0, \omega_1, \cdots) = (\omega_1, \omega_2, \cdots)$. 
+则$\varphi$为保测映射且$X_n(\omega) = X(\varphi^n \omega)$. 
+这样，我们就可以引入动力系统理论中的工具来对$X_n$的渐进性质进行分析. 
+
+称$A \in \cF$为$\varphi$-\emph{不变的}, 如果有$\varphi^{-1}(A) = A$ (这里等式成立, 如果$\P(\varphi^{-1}(A) \Delta A) = 0$). 
+记$\cI$为$\varphi$-不变集的全体, 则$\cI$天然地构成了一个$\sigma$-域. 
+
+\begin{definition}[遍历性]
+	称$\varphi$为遍历的如果$\cI = \{\emptyset, \Omega\}$为平凡$\sigma$-域. 
+	换而言之, 对于$A \in \cI$, 只能有$\P(A) = 0$或$\P(A) = 1$. 
+\end{definition}
+这说明若$\varphi$不是遍历的, 那么全空间可以分割为$A$和$A^c$满足$\P(A), \P(A^c) > 0$, $\varphi(A) = A$, $\varphi(A^c) = A^c$. 
+换言之, $\varphi$是可约的. 
+
+\begin{example}
+	\begin{enumerate}
+		\item (i.i.d.序列) 考虑样本空间$\Omega = \R^{\N}$, $\varphi$为推移算子. $\varphi$-不变集$A$满足\begin{align*}
+			\{\omega \colon \omega \in A\} 
+			&= \{\omega \colon \varphi \omega \in A\}
+			\in \sigma(X_1, X_2, \cdots) \\
+			&= \{\omega \colon \varphi^n \omega \in A\} 
+			\in \sigma(X_n, X_{n+1}, \cdots), 
+		\end{align*}
+		于是$A \in \bigcap_n \sigma(X_n, X_{n+1}, \cdots) =: \mathcal T$为尾$\sigma$-域. 
+		由Kolmogorov 0-1 律 \ref{thm:Kolmogorov0-1Law} 可知$\mathcal T$平凡. 
+		\item (Markov链) 若$S$不可约, $\pi > 0$, 则$\cI$平凡. 
+			\begin{proof}
+				任取$A \in \cI$, 于是$\mathbf 1_A \circ \theta_n = \mathbf 1_A$, 于是由Markov性有
+				\begin{equation*}
+					\E_{\pi}(\mathbf 1_A | \cF_n)
+					= \E_{\pi}(\mathbf 1_A \circ \theta_n | \cF_n)
+					= \E_{X_n} \mathbf 1_A, 
+				\end{equation*}
+				其中$\cF_n$为$X_n$诱导的自然流, 于是由Lévy 0-1 律 \ref{thm:Lévy0-1Law}, $\E_{\pi}(\mathbf 1_A | \cF_n) \stackrel{a.s.}{\to} \mathbf 1_A$.  
+				又$X_n$常返、不可约, 由Borel-Cantelli第 \uppercase\expandafter{\romannumeral2} 引理, 可知$\P_y(X_n = y \text{ i.o.} ) =1$, $\forall x,y$. 
+				于是$\E_{X_n} \mathbf{1}_A \to \E_x \mathbf{1}_A \equiv C$, $\forall x$. 
+				注意到$\mathbf{1}_A$为只能取$0$或$1$的随机变量, 于是$\P(A) \in \{0, 1\}$. 
+			\end{proof}
+		\item ($\mathbb S^1$上的旋转) 为遍历的当且仅当$\theta$为无理数. 
+	\end{enumerate}
+\end{example}
+
+\begin{theorem}[Birkhoff遍历定理]
+	对任意$X \in L^1(\Omega, \cF, \P)$, 
+	\begin{equation}\label{eq:Birkhoff}
+		\frac{1}{n} \sum_{m=0}^{n-1} X(\varphi^m \omega) \to \E(X | \cI) \text{ a.s. 且 } L^1. 
+	\end{equation}
+	更进一步地, 若$\varphi$遍历, 则$\E(X|\cI) = \E(X)$. 
+\end{theorem}
+
+\begin{remark}
+	等式\eqref{eq:Birkhoff}中左侧可以看做关于时间的平均, 右侧可以看做关于空间的平均. 
+\end{remark}
+
+\begin{example}
+	\begin{enumerate}
+		\item (i.i.d.序列) 由$\cI$平凡, 应用遍历定理
+			\begin{equation*}
+				\frac{1}{n} \sum_{m = 0}^{n-1} X_m \to \E X_0 \;\text{ a.s. 且 } L^1. 
+			\end{equation*}
+			其中a.s.收敛即强大数定律. 
+		\item (平稳分布的Markov链) 令$X_n$为可数状态空间上具有平稳分布$\pi$的不可约马尔可夫链, 函数$f \colon S \to \R$满足$\sum_x |f(x)| \pi(x) < \infty$. 
+			应用遍历定理可得
+			\begin{equation*}
+				\frac{1}{n} \sum_{m = 0}^{n-1} f(X_m) \to \sum_x f(x) \pi(x) \;\text{ a.s. 且 } L^1.
+			\end{equation*}
+		\item ($\mathbb S^1$上的旋转) 若$\theta$为无理数, 此时$\cI$平凡. 对任意$A \in \mathcal B([0,1))$, 取$X(\omega) = \mathbf{1}_A$, 应用遍历定理可得
+			\begin{equation*}
+				\frac{1}{n} \sum_{m = 0}^{n-1} \I{\{\varphi^m \omega \in A\}} \to |A| \;\text{ a.s.}.
+			\end{equation*}
+			即平均到达$A$的次数等于$A$的体积. 
+	\end{enumerate}
+\end{example}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{布朗运动}
+
+%-----------------------------------------------------------
+\subsection{定义、实现、性质}
+
+\noindent
+称实值随机过程$(B_t)_{t \geq 0}$为\emph{一维布朗运动}, 如果它满足
+\begin{enumerate}[label=\textbf{\alph*.}]
+	\item (有限维独立增量) $\forall 0 \leq t_0 < t_1 < \cdots < t_n$, 有$B_{t_0}, B_{t_1} - B_{t_0}, \cdots, B_{t_n} - B_{t_{n-1}}$相互独立;
+	\item (Gauss过程) 对任意$s, t \geq 0$, 有$B_{s+t} - B_s \sim \mathcal N(0,t)$, 即
+		\begin{equation*}
+			\P(B_{s+t} - B_s \in A) 
+			= \int_A \frac{1}{\sqrt{2 \pi t}} \exp \left( - \frac{x^2}{2t} \right) \dd x;
+		\end{equation*}
+	\item (轨道连续性) $\P( t \mapsto B_t \text{ 连续 }) = 1$. 
+\end{enumerate}
+若初始状态满足$B_0 = 0$, 称\emph{标准布朗运动}, 其有如下等价定义, 即\emph{连续的中心Gauss过程}: 
+\begin{enumerate}[label=\textbf{\alph*'.}]
+	\item $B_{t}$为Gauss过程, 即其任意有限维分布为正态分布; 
+	\item 期望$\E B_s = 0$, 协方差$\E B_s B_t = s \wedge t$; 
+	\item $t \mapsto B_t$ a.s. 连续. 
+\end{enumerate}
+\begin{remark}
+	显然\emph{a.}和\emph{b.}意味着\emph{a'.}. 
+	期望和协方差的计算利用了独立增量性: 若$t > s$则
+	\begin{equation*}
+		\E_0[B_t B_s]
+		= \E_0[(B_t - B_s) B_s] + \E_0 B_s^2
+		= s. 
+	\end{equation*}
+\end{remark}
+
+\begin{definition}[高维布朗运动]
+	称$B_t = (B_t^1, \cdots, B_t^d) \in \R^d$为高维布朗运动, 如果$\{ B_t^i \}$为独立的布朗运动. 
+	其概率密度函数为
+	\begin{equation}\label{eq:MultiDIto}
+		p_t(x,y) = \frac{1}{\sqrt{2 \pi t}} \exp \left(- \frac{\|y - x\|^2}{2} \right), \quad x,y \in \R^d.
+	\end{equation}
+\end{definition}
+
+
+\sp 
+布朗运动的实现是由Weiner给出的, 因此又称\emph{Weiner过程}. 
+考虑空间$C = C([0, \infty), \R)$, 
+
+Weiner证明了对任意$x \in \R$, 存在$(C, \mathcal C)$上的测度$\P_x$, 使得$\omega(t) =: B_t(\omega) \in C$为从$x$出发的布朗运动的轨道. 
+
+\sp 
+从定义出发, 我们立刻得到布朗运动具有如下性质: 
+\begin{theorem}[推移不变性]
+	$\{B_t - B_0\}_{t \geq 0}$独立于$B_0$, 且为标准布朗运动. 
+\end{theorem}
+\begin{proof}
+	这等价于$B_0$和$B_t - B_0$的任意有限维分布独立. 
+	定义$\mathcal A_1 := \sigma(B_0)$,  
+	\begin{equation*}
+		\mathcal A_2
+		:= \bigcup_n \sigma(B_{t_1} - B_{t_0}, \cdots, B_{t_n} - B_{t_{n-1}} ), 
+	\end{equation*}
+	于是$\mathcal A_1$与$\mathcal A_2$为独立的$\pi$类, 再由$\pi - \lambda$定理, 有命题成立. 
+\end{proof}
+
+由标准布朗运动的等价定义: 
+\begin{theorem}[标度变换]
+	若$B_t$为标准布朗运动, 对任意$t > 0$, $K \neq 0$, $(K^{-1} B_{K^2 t})_{t \geq 0}$亦为布朗运动. 
+	一般情况下, 我们常用分布意义下的等式: 
+	\begin{equation*}
+		\{B_{st}\}_{s \geq 0} \stackrel{\mathcal L}{=} \{\sqrt{t} B_s\}_{s \geq 0}. 
+	\end{equation*}
+\end{theorem}
+\begin{proof}
+	由于$B_{st} \sim \mathcal N(0, st)$, 这与$\sqrt{t} B_s$有相同的概率密度函数, 于是二者有相同的有限维分布. 
+\end{proof}
+
+\begin{theorem}
+	若$B_t$为标准布朗运动, 那么$X_0 = 0$, $X_t = t B_{1/t}$亦为标准布朗运动.
+\end{theorem}
+\begin{proof}
+	事实上$X_t$为Gauss过程: 首先协方差
+	\begin{equation*}
+		\E(X_t X_s) = 
+		ts \E(B_{1/t} B_{1/s}) 
+		= ts \cdot \frac 1t \wedge \frac 1s
+		= t \wedge s. 
+	\end{equation*}
+	于是$\E(B_t - B_s)^2 $
+	关键在于证明$\P(\lim_{t \downarrow 0} X_t = 0) = 1$. 
+\end{proof}
+
+\begin{theorem}[轨道的Hölder连续性]
+	布朗运动轨道Hölder连续连续但几乎处处不可微. 
+	即对几乎任意的$\omega$, 存在$C = C(\omega)$使得
+	\begin{equation*}
+		|B_t(\omega) - B_s(\omega)| \leq C(\omega) |t - s|^{\gamma}, \quad 0 < \gamma < 1/2. 
+	\end{equation*}
+\end{theorem}
+
+\begin{theorem}
+	布朗运动在分布意义下唯一, 但轨道不唯一. 
+\end{theorem}
+\begin{proof}
+	考虑标准布朗运动$B_t$, 则$- B_t$亦为标准布朗运动, 但是
+	\begin{equation*}
+		\P(\omega \colon B_t(\omega) = -B_t(\omega), \; \forall t) = 0. 
+	\end{equation*}
+\end{proof}
+
+\begin{definition}[一次变差、平方变差]
+	考虑时间$T$和$[0, T]$的一个划分$0 = t_1 < t_2 < \cdots < t_n = T$, 记$\Delta_i = t_{i} - t_{i-1}$, $\delta = \min_i \Delta_i$为划分的细度. 
+\end{definition}
+
+\begin{lemma}
+	若$A$连续且有有限一次变差, 那么$\langle A \rangle = 0$. 
+\end{lemma}
+\begin{proof}
+	令$A(\Delta) := \max \{|x(t_i) - x(t_{i-1})| \colon 1 \leq i \leq n \}$, 于是在划分变细时
+\end{proof}
+
+\begin{theorem}[平方变差]
+	
+\end{theorem}
+
+\begin{proof}
+	由于$T = \sum_{i=1}^{n} \Delta_i$, 
+	\begin{equation*}
+		\E \left[ \sum_{i=1}^n |B_{t_i} - B_{t_{i-1}}|^2 - T \right]^2
+		= \E \left[ \sum_{i=1}^n (|B_{t_i} - B_{t_{i-1}}|^2 - \Delta_i) \right]^2 
+		= I_1 + I_2, 
+	\end{equation*}
+	其中
+	\begin{align*}
+		I_1 
+		&= \E \left[ \sum_{i=1}^n (|B_{t_i} - B_{t_{i-1}}|^2 - \Delta_i)^2 \right]
+		= \sum_{i=1}^n \E \left(|B_{t_i} - B_{t_{i-1}}|^4 - 2 \Delta_i |B_{t_i} - B_{t_{i-1}}|^2 + \Delta_i^2 \right) \\
+		&= \sum_{i=1}^n \E \left(3 \Delta_i^2 - 2 \Delta_i^2 + \Delta_i^2 \right)
+		= 2 \sum_{i=1}^n \Delta_i^2 
+		\leq 2 \cdot \delta \sum_{i=1}^n \Delta_i
+		= 2 \delta T \to 0. 
+	\end{align*}
+	再由独立性, 
+	\begin{align*}
+		I_2 
+		&= 2 \sum_{i < j} \E(|B_{t_{i + 1}} - B_{t_i}|^2 - \Delta_i)(|B_{t_{j + 1}} - B_{t_j}|^2 - \Delta_j)\\
+		&= 2 \sum_{i < j} \E(|B_{t_{i + 1}} - B_{t_i}|^2 - \Delta_i) \E(|B_{t_{j + 1}} - B_{t_j}|^2 - \Delta_j)
+		= 0
+	\end{align*}
+\end{proof}
+
+布朗运动的二次变差会出现在随机积分的Itô公式中
+
+
+
+
+%-----------------------------------------------------------
+\subsection{马氏性}
+
+\noindent
+为了叙述Markov性, 我们引入如下记号. 
+记自然流流$\cF_s^o := \sigma(B_r; r \leq s)$, $\cF_s^+ = \cap_{t > s} \cF_t^o$为右连续流. 
+定义推移算子$\theta_s \colon C \to C$为
+\begin{equation*}
+	(\theta_s \omega) (t) = \omega(s + t),\; t \geq 0. 
+\end{equation*}
+
+\begin{theorem}[Markov性]
+	设$Y$为有界$\mathcal C$-可测函数, 对任意$x \in \R^d$, 有
+	\begin{equation*}
+		\E_x(Y \circ \theta_s | \cF_s^+) = \E_{B_s} Y, 
+	\end{equation*}
+	其中右边为函数$\varphi(x):=\E_x Y$在$B_s$的取值. 
+\end{theorem}
+
+\begin{theorem}
+	若$Z \in \mathcal C$有界, 那么对任意$s \geq 0$, $x \in \R^d$, 几乎处处意义下成立
+	\begin{equation*}
+		\E_x(Z | \cF_s^+) = \E_x(Z | \cF_s^o). 
+	\end{equation*}
+\end{theorem}
+
+\begin{theorem}[Blumenthal 0-1 律]
+	若$A \in \cF_0^+$, 则对任意$x \in \R^d$, $\P_x(A) \in \{0, 1\}$. 
+\end{theorem}
+\begin{proof}
+	由于$\P_x(B_0 = x) =1$, 于是$\cF_0^o = \sigma(B_0)$在$\P_x$下平凡(其中事件的概率非 0 即 1), 结合上一定理有
+	\begin{equation*}
+		\P_x(A) = \E_x \mathbf 1_A = \E_x(\mathbf 1_A| \cF_0^o) = \E_x(\mathbf 1_A| \cF_0^+) = \mathbf 1_A \in \{0, 1\}. 
+	\end{equation*}
+\end{proof}
+
+换而言之, 这说明说明$\cF_0^+$也是在$\P_x$下也是平凡的. 
+这一结果对于研究布朗路径的局部行为非常有用. 
+下面我们考虑一维布朗运动. 
+\begin{theorem}
+	令$\tau := \inf\{ t \geq 0 \colon B_t > 0\}$为到达正半轴的首中时, 则$\P_0(\tau = 0) = 1$. 
+\end{theorem}
+\begin{proof}
+	由于$\{ B_t > 0 \} \subseteq \{ \tau \leq t \}$, 结合$Gauss$分布对称性有$\P_0(\tau \leq t) \geq \P_0(B_t > 0) = 1/2$, $\forall t > 0$.  
+	令$t \downarrow 0$有$\P_0(\tau = 0) \geq 1/2$. 
+	另一方面, 由于$\{\tau = 0\} \in \cF_0^+$, 根据Blumenthal 0-1 律, $\P_0(\tau = 0)$只能为$1$.
+\end{proof}
+\begin{theorem}
+	令$T_0 := \inf\{t>0 \colon B_t = 0\}$为首返时, 则$\P_0(T_0 = 0) = 1$. 
+\end{theorem}
+
+称随机变量$S \colon (\Omega, \cF) \to [0, +\infty]$为$\cF_t^+$\emph{停时}, 如果$\{S \leq t\} \in \cF_t^+$. 
+在连续时间下, 这又等价于$\{S < t\} \in \cF_t^+$: 
+\begin{itemize}
+	\item 若$\{S \leq t\} \in \cF_t^+$, 则$\{S < t\} = \bigcup_n \{S \leq t - 1/n\} \in \cF_t^+$; 
+	\item 若$\{S < t\} \in \cF_t^+$, 则$\{S \leq t\} = \bigcap_n \{S < t + 1/n\} \in \cF_t^+$. 
+\end{itemize}
+若$T_n$为一列停时, 则$T_n \uparrow T$或$T_n \downarrow T$都意味着$T$为停时. 
+定义关于停时$S$的随机时间流
+\begin{equation*}
+	\cF_S := \{ A \in \cF_{\infty} \colon A \cap \{S \leq t\} \in \cF_t^+,\; \forall t \geq 0\}. 
+\end{equation*}
+
+\begin{theorem}[强Markov性]
+	设$(s, \omega) \mapsto Y_s(\omega)$为有界、$\mathcal R \times \mathcal C$可测函数, $S$为停时. 
+	对任意$x \in \R^d$, 在$\{S < \infty\}$上成立
+	\begin{equation*}
+		\E_x(Y_S \circ \theta_S | \cF_S) = \E_{B_S} Y_S, 
+	\end{equation*}
+	其中右边为函数$\varphi(x, t) = \E_x Y_t$在$(x, t) = (B_S, S)$处的取值. 
+\end{theorem}
+
+%-----------------------------------------------------------
+\subsection{鞅性}
+\noindent
+称连续时间随机过程$\{X_t; 0 \leq t < \infty\}$为关于流$\{\cF_t\}$的鞅, 如果对任意$s \geq t$有
+\begin{equation*}
+	\E(X_s | \cF_t) = X_t. 
+\end{equation*}
+除了$B_t$本身具有鞅性外, 我们还可以利用布朗运动构造出一系列鞅, 证明的关键在于\emph{增量独立, 且为Gauss过程}. 
+
+\begin{theorem}[布朗运动的鞅性]
+	$B_t$为关于其自然流$\cF_t$的鞅
+\end{theorem}
+\begin{proof}
+	由独立增量性, $\E_x(B_t | \cF_s) = \E_x(B_t - B_s| \cF_s) + \E_x(B_s | \cF_s) = 0 +  B_s$. 
+\end{proof}
+
+\begin{theorem}\label{thm:BM^2-t}
+	$B_t^2$不是鞅, 向下漂移后的$B_t^2 - t$为鞅. 
+\end{theorem}
+\begin{proof}
+	由独立增量性, Gauss过程性, 
+	\begin{align*}
+		\E_x(B_t^2|\cF_s)
+		&= \E_x(B_s^2 + 2 B_s (B_t - B_s) + (B_t - B_s)^2 | \cF_s) \\
+		&= B_s^2 + 2 B_s \E(B_t - B_s | \cF_s) + \E((B_t - B_s)^2 | \cF_s) \\
+		&= B_s^2 + 0 + (t-s). 
+	\end{align*}
+\end{proof}
+
+\begin{theorem}
+	$\exp(\theta B_t - \theta^2 t / 2)$为鞅. 
+\end{theorem}
+\begin{proof}
+	\begin{align*}
+		\E_x(\exp(\theta B_t) | \cF_s)
+		&= \exp(\theta B_s) \cdot \E(\exp(\theta(B_t - B_s) | \cF_s) \\
+		&= \exp(\theta B_s) \cdot \exp \left(\theta^2 \frac{t-s}{2} \right). 
+	\end{align*}
+\end{proof}
+
+\begin{theorem}
+	若多项式$u(t,x)$, 满足
+	\begin{equation*}
+		\partial_t u  + \frac{1}{2} \frac{\partial^2 u}{\partial x^2} = 0, 
+	\end{equation*}
+	则$u(t, B_t)$为鞅. 
+\end{theorem}
+\begin{proof}
+	对于初始位置$B_0  = x$的一维布朗运动, 由于$B_t - B_0 \sim \mathcal N(0, t)$, 于是$B_t$的概率密度函数为
+	\begin{equation*}
+		p_t(x, y) = \frac{1}{\sqrt{2 \pi t}} \exp\left( - \frac{|y - x|^2}{2t} \right), 
+	\end{equation*}
+	可以验证它满足热方程$\partial_t p_t = \frac{1}{2} \frac{\partial^2}{\partial y^2} p_t$. 
+	考虑
+	\begin{align*}
+		\partial_t \E_x u(t, B_t)
+		&= \frac{\partial}{\partial t} \int_{\R} u(t, y) p_t(x, y) \dd y 
+		= \int_{\R} \partial_t u(t, y) \cdot p_t(x, y) + u(t, y) \cdot \partial_t p_t(x, y) \dd y \\
+		&= \int_{\R} \partial_t u(t, y) \cdot p_t(x, y) + u(t, y) \cdot \frac{1}{2} \frac{\partial^2}{\partial y^2} p_t(x, y) \dd y 
+		= \int_{\R} p_t(x,y) \left( \partial_t u  + \frac{1}{2} \frac{\partial^2 u}{\partial x^2} \right) = 0
+	\end{align*}
+	其中最后一步由分部积分得到, 积分的收敛性由$u$为多项式保证. 
+	于是$\E_x u(t, B_t)$与$t$无关. 
+	要使条件期望等于期望, 我们需要Markov性
+	令$v(r, x) = u(s+r, x)$, 于是
+	\begin{align*}
+		\E_x(u(t, B_t) | \cF_s)
+		&= \E_x(u(t, B_{t - s} \circ \theta_s) | \cF_s) 
+		= \E_x(v(t -s, B_{t-s}) \circ \theta_s | \cF_s) \\
+		&= \E_{B_s} v(t -s, B_{t-s}) 
+		= \E_{B_s} v(0, B_0) 
+		= v(0, B_s)
+		= u(s, B_s). 
+	\end{align*}
+\end{proof}
+
+%-----------------------------------------------------------
+\subsection{伊藤公式}
+
+\noindent
+本节我们不加证明的介绍一些定理, 主要目标其在偏微分方程中的应用. 
+
+\begin{theorem}[一维Itô公式]
+	对于$f \in C^2(\R)$, 则 
+	\begin{equation}\label{eq:1dIto}
+		f(B_t) - f(B_0)
+		= \int_0^t f'(B_s) \dd B_s + \frac{1}{2} \int_0^t f''(B_s) \dd s \quad \text{a.s.}.
+	\end{equation}
+\end{theorem}
+\begin{corollary}
+	特别地, 取$f(x) = x^2$, 有
+	\begin{equation}\label{eq:1dIto'}
+		B_t^2 - B_0^2 = \int_0^t 2 B_s \dd B_s + t. 
+	\end{equation}
+\end{corollary}
+
+\begin{theorem}
+	设$g \in C(\R)$满足二阶矩条件$\E \int_0^t |g(B_s)|^2 \dd s < \infty$, 则$M_t := \int_0^t g(B_s) \dd B_s$为连续鞅. 
+	若没有矩条件, 则$M_t$为局部鞅. 
+	即存在一列停时$T_n \uparrow \infty$使得$M_{t \wedge T_n}$为鞅. 
+\end{theorem}
+
+\begin{corollary}\label{thm:IntLocalMartingaleProperty}
+	对于函数$f \in C^2(\R^d)$, $\int_0^t D_i f(B_s) \dd B_s^i$为局部鞅. 
+\end{corollary}
+
+
+\begin{theorem}[高维Itô公式]
+	对于$f \in C^2([0, +\infty) \times \R^d)$, 有
+	\begin{equation*}
+		f(t, B_t) - f(0, B_0)
+		= \int_0^t \frac{\partial f}{\partial s}(s, B_s) \dd s 
+		+ \sum_{i=1}^d \int_0^t D_i f(s, B_s) \dd B_s^i 
+		+ \frac{1}{2} \int_0^t \Delta f(s, B_s) \dd s 
+		\quad a.s..
+	\end{equation*}
+\end{theorem}
+
+
+\noindent\textbf{\keben \large 与拉氏方程的联系}
+
+
+
+\noindent
+我们考虑布朗运动与Laplace方程$\Delta \varphi = 0$的基本解
+\begin{equation*}
+	\varphi(x) = 
+	\begin{cases}
+		\log |x|, & d = 2, \\
+		|x|^{2-d}, & d \geq 3, 
+	\end{cases}
+\end{equation*}
+之间的联系. 
+定义停时$S_r : = \inf \{ t \colon |B_t| = r \}$. 
+则对于$|x| < R$, $\P_x(S_R < \infty) = 1$. 
+\begin{lemma}
+	若$v \in C^2(\R^d)$, 且满足$\E \int_0^t \sum_{i=1}^d \left| v(B_s) \right|^2 \dd s < \infty$, 则由Itô公式
+	\begin{equation*}
+		v(B_t) - \frac12 \int_0^t \Delta v(B_s) \dd s \quad\text{为连续鞅. }
+	\end{equation*}
+\end{lemma}
+
+\begin{theorem}
+	若$|x| < R$, 则$\E_x S_R = (R^2 - |x|^2) / d$. 
+\end{theorem}
+\begin{proof}
+	由定理 \ref{thm:BM^2-t}, $|B_t|^2 - d \cdot t = \sum_{i=1}^d [(B_t^i)^2 - t]$为鞅, 于是
+	\begin{equation*}
+		|x|^2 = \E_x |B_0|^2 = \E_x |B_{t \wedge S_R}|^2 - d \cdot \E_x ( t \wedge S_R ), 
+	\end{equation*}
+	令$t \to \infty$, 由轨道连续性有命题成立. 
+\end{proof}
+
+\begin{theorem}
+	令$\tau = S_r \wedge S_R$, $s < R$, 则$\varphi(x) = \E_x \varphi(B_{\tau})$
+\end{theorem}
+\begin{proof}
+	定义径向对称函数$\psi(x) = g(|x|) \in C_0^2(\R^d)$, 且在$r < |x| < R$上满足$\psi(x) = \varphi(x)$. 
+	于是由伊藤公式
+	\begin{equation*}
+		\psi(B_{t \wedge \tau}) - \psi(B_0)
+		= \sum_{i=1}^d \int_0^{t \wedge \tau} D_i \psi(B_s) \dd B_s^i + \frac{1}{2} \int_0^{t \wedge \tau} \Delta \psi(B_s) \dd s, 
+	\end{equation*}
+	其中由分部积分
+	\begin{equation*}
+		\sum_{i=1}^d \int_0^{t \wedge \tau} ( D_i \psi(B_s) )^2 \dd B_s^i 
+		= \int_0^{t \wedge \tau} |\nabla \psi(B_s)|^2 \dd B_s
+		= 0
+	\end{equation*}
+	取期望有
+	\begin{equation*}
+		\E_x \psi(B_{t \wedge \tau}) - \psi(x)
+		= \frac{1}{2} \E_x \Delta \psi(B_s) \dd s 
+		= 0. 
+	\end{equation*}
+	令$t \to \infty$, 有命题成立.
+\end{proof}
+
+\noindent\textbf{\keben \large 与热方程中的联系}
+
+考虑热方程的初值问题
+
+\begin{equation*}
+	\begin{cases}
+		\partial_t u = \frac{1}{2} \Delta u, \\
+		u(0, x) = f(x), 
+	\end{cases}
+\end{equation*}
+其中$u \in C^{1,2}((0, +\infty) \times \R^d)$, $f$为有界连续函数. 
+
+\begin{theorem}
+	若$u$满足热方程$\partial_t u = \frac{1}{2} \Delta u$, 则$M_s = u(t-s, B_s)$为$[0,t]$上的局部鞅.
+\end{theorem}
+\begin{proof}
+	由高维Itô公式\eqref{eq:MultiDIto}, 推论 \ref{thm:IntLocalMartingaleProperty} 可知下式为局部鞅. 
+	\begin{align*}
+		&u(t-s, B_s) - u(t, B_0) \\
+		=& \int_0^s - u_t(t-r, B_r) \dd r + \sum_{i=1}^d \int_0^s D_i u(t-r, B_r) \dd B_r^i + \frac{1}{2} \int_0^s \Delta u(t-r, B_r) \dd r \\
+		=& \sum_{i=1}^d \int_0^s D_i u(t-r, B_r) \dd B_r^i 
+	\end{align*}
+\end{proof}
+
+\begin{theorem}
+	若$u$为初值问题的有界解, 则一定有$u(t, x) = \E_x f(B_t)$. 
+\end{theorem}
+\begin{proof}
+	此时$M_s = u(t-s, B_s)$在$[0, t]$为有界鞅, 由鞅收敛定理有
+	\begin{equation*}
+		\lim_{s \uparrow t} M_s = M_t \equiv f(B_t) \text{ a.s. }
+	\end{equation*}
+	再由$M_s$一致可积, $\E_x f(B_t) = \E_x M_t = \E_x M_0 = u(t, x)$. 
+\end{proof}
+
+\appendix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Tricks and Useful Theorems}
+
+\begin{lemma}\label{lemma:trickOfExpectation}
+	若$Y \geq 0$, $p > 0$, 则有
+	\begin{equation}
+		\E Y^p = \int_0^{\infty} p y^{p-1} \P(Y > y) \dd y. 
+	\end{equation}
+	特别的, 对于$X \geq 0$, 有
+	\begin{equation*}
+		\E X = \int_0^{\infty} \P(X > x) \dd x. 
+	\end{equation*}
+	进一步地, 若$X$取值范围为$\N$, 则有
+	\begin{equation*}
+		\E X = \sum_{k=0}^{\infty} \P(X \geq k). 
+	\end{equation*}
+\end{lemma}
+\begin{proof}
+	\begin{align*}
+		\E Y^p 
+		&= \int_\Omega Y^p \dd \P 
+		= \int_\Omega \int_0^Y p y^{p-1} \dd y \dd \P 
+		= \int_\Omega \int_0^{\infty} p y^{p-1} \I{\{Y > y\}} \dd y \dd \P \\
+		&= \int_0^{\infty} p y^{p-1} \int_\Omega \I{\{Y > y\}} \dd \P \dd y
+		= \int_0^{\infty} p y^{p-1} \P(Y > y) \dd y.
+	\end{align*}
+\end{proof}
+
+\begin{theorem}[Kolmogorov扩张定理]\label{thm:KolmogorovExt}
+	给定$(\R^n, \cR^n)$上的\textbf{相容}概率测度, 即
+	\begin{equation*}
+		\mu_{n+1}\left( (a_1,b_1] \times \cdots \times (a_n, b_n] \times \R \right)
+		= \mu_{n}\left( (a_1,b_1] \times \cdots \times (a_n, b_n] \right). 
+	\end{equation*}
+	则在$(\R^{\N}, \cR^{\N})$上存在\textbf{唯一}的概率测度$\P$使得
+	\begin{equation*}
+		\P(\omega \colon \omega_i \in (a_i,b_i],\; 1 \leq i \leq n)
+		= \mu_{n}\left( (a_1,b_1] \times \cdots \times (a_n, b_n] \right). 
+	\end{equation*}
+\end{theorem}
+
+
+\begin{theorem}[Kolmogorov 0-1 律]\label{thm:Kolmogorov0-1Law}
+	记$\cF_n' = \sigma(X_{n+1}, X_{n+2}, \cdots)$, $\mathcal T = \bigcap_n \cF_n'$为尾$\sigma$-域, $A \in \mathcal T$为尾事件. 
+	独立随机变量序列任一尾事件的概率非$0$即$1$, 即$\mathcal T$为$\P$-平凡的. 
+\end{theorem}
+
+\begin{proof}
+	我们将证明, 对任意$A \in \mathcal T$, 有$A$与自身独立: $\P(A \cap A) = \P(A)^2$, 从而$\P(A)$只能非$0$即$1$. 
+	\begin{enumerate}
+		\item[(a)] 自然流$\cF_n = \sigma(X_1, \cdots, X_n)$与$\cF_n'$独立. 
+	\end{enumerate}
+\end{proof}
+
+
+
+
+\nocite{klenke:2020a,durrett:2019a,williams:1991a}
+\bibliographystyle{alpha}
+{\small
+\bibliography{SPref}
+}
+\end{document} 
